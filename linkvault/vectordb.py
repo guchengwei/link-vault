@@ -253,10 +253,29 @@ class VectorDB:
             for r in cur.fetchall()
         ]
 
-    def stats(self) -> Dict[str, int]:
+    def get_document_by_url(self, url: str) -> Optional[Dict[str, Any]]:
+        """Get a single document by URL. Returns dict or None."""
+        cur = self.conn.cursor()
+        cur.execute(
+            "SELECT id, url, source_type, title, author, full_text, "
+            "metadata_json, md_path, created_at FROM documents WHERE url = ?",
+            (url,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row[0], "url": row[1], "source_type": row[2],
+            "title": row[3], "author": row[4], "full_text": row[5],
+            "metadata": json.loads(row[6]) if row[6] else {},
+            "md_path": row[7], "created_at": row[8],
+        }
+
+    def stats(self) -> Dict[str, Any]:
         cur = self.conn.cursor()
         cur.execute("SELECT COUNT(*) FROM documents")
         docs = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM chunks")
         chunks = cur.fetchone()[0]
-        return {"documents": docs, "chunks": chunks}
+        db_size = os.path.getsize(self.db_path) if os.path.exists(self.db_path) else 0
+        return {"documents": docs, "chunks": chunks, "db_size_bytes": db_size}

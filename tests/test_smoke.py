@@ -163,6 +163,38 @@ def test_cli_search():
         assert len(data) > 0
 
 
+# ---- VectorDB get_document_by_url ----
+def test_get_document():
+    from linkvault.vectordb import VectorDB
+    with tempfile.TemporaryDirectory() as tmpdir:
+        db_path = os.path.join(tmpdir, "test.db")
+        db = VectorDB(db_path)
+        db.ingest(
+            url="https://x.com/test/status/99",
+            source_type="tweet",
+            title="Test Tweet",
+            author="tester",
+            text="This is a test document for retrieval.",
+            metadata={"likes": 10},
+        )
+        doc = db.get_document_by_url("https://x.com/test/status/99")
+        assert doc is not None
+        assert doc["title"] == "Test Tweet"
+        assert doc["author"] == "tester"
+        assert doc["full_text"] == "This is a test document for retrieval."
+        assert doc["metadata"]["likes"] == 10
+        assert doc["source_type"] == "tweet"
+
+        missing = db.get_document_by_url("https://example.com/nope")
+        assert missing is None
+
+        s = db.stats()
+        assert "db_size_bytes" in s
+        assert s["db_size_bytes"] > 0
+
+        db.close()
+
+
 # ---- Run all ----
 if __name__ == "__main__":
     print("=== link-vault smoke tests ===\n")
@@ -173,6 +205,7 @@ if __name__ == "__main__":
     test("Text chunking", test_chunking)
     test("Markdown storage", test_storage)
     test("Vector DB ingest+search", test_vectordb)
+    test("VectorDB get_document", test_get_document)
     test("CLI ingest", test_cli_ingest)
     test("CLI search", test_cli_search)
     print(f"\n=== Results: {PASS} passed, {FAIL} failed ===")
