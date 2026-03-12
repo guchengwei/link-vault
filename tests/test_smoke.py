@@ -195,6 +195,54 @@ def test_get_document():
         db.close()
 
 
+# ---- Decompress response ----
+def test_decompress_gzip():
+    import gzip
+    from linkvault.fetchers import _decompress_response
+    original = b"<html><body>Hello Bilibili</body></html>"
+    compressed = gzip.compress(original)
+    assert _decompress_response(compressed, "gzip") == original
+    assert _decompress_response(compressed, "x-gzip") == original
+    # Identity / no encoding
+    assert _decompress_response(original, "") == original
+    assert _decompress_response(original, "identity") == original
+
+
+def test_decompress_deflate():
+    import zlib
+    from linkvault.fetchers import _decompress_response
+    original = b"<html><body>Test deflate</body></html>"
+    compressed = zlib.compress(original)
+    assert _decompress_response(compressed, "deflate") == original
+
+
+# ---- Binary / garbled text detection ----
+def test_looks_like_text():
+    from linkvault.fetchers import _looks_like_text
+    # Normal text passes
+    assert _looks_like_text("Hello world, this is a normal webpage.")
+    assert _looks_like_text("日本語テキストもOKです。")
+    assert _looks_like_text("")  # empty is fine
+    # Garbled binary fails
+    garbled = "\ufffd" * 100  # all replacement chars
+    assert not _looks_like_text(garbled)
+    # Mixed garbled (>5% bad)
+    mostly_bad = "\ufffd" * 10 + "x" * 50
+    assert not _looks_like_text(mostly_bad)
+    # Mostly good with a few replacements (<5%)
+    mostly_good = "Normal text content here. " * 10 + "\ufffd"
+    assert _looks_like_text(mostly_good)
+
+
+# ---- fetch_webpage rejects garbled content ----
+def test_webpage_rejects_garbled():
+    """Simulate what happens when decompression works but content is still garbled."""
+    from linkvault.fetchers import _looks_like_text
+    # This simulates a page that, after decompression, still produces replacement chars
+    garbled = "\ufffd\x01\x02" * 200
+    assert not _looks_like_text(garbled), "Garbled text should be rejected"
+
+
 # ---- Run all ----
 if __name__ == "__main__":
     print("=== link-vault smoke tests ===\n")
@@ -208,5 +256,9 @@ if __name__ == "__main__":
     test("VectorDB get_document", test_get_document)
     test("CLI ingest", test_cli_ingest)
     test("CLI search", test_cli_search)
+    test("Decompress gzip", test_decompress_gzip)
+    test("Decompress deflate", test_decompress_deflate)
+    test("Text vs binary detection", test_looks_like_text)
+    test("Garbled content rejection", test_webpage_rejects_garbled)
     print(f"\n=== Results: {PASS} passed, {FAIL} failed ===")
     sys.exit(0 if FAIL == 0 else 1)
