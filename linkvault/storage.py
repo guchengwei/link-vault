@@ -5,6 +5,8 @@ Directory structure:
   content/
     tweets/YYYY-MM/screen_name-tweetid.md
     youtube/YYYY-MM/videoid.md
+    video/YYYY-MM/videoid.md          (bilibili, etc.)
+    reddit/YYYY-MM/subreddit-slug.md
     web/YYYY-MM/domain-slug.md
 """
 
@@ -88,6 +90,16 @@ def save_result(result: FetchResult, base_dir: str = "content") -> Optional[str]
         vid = m.group(1) if m else _slugify(result.title or "video")
         filename = f"{vid}.md"
         subdir = f"youtube/{month_dir}"
+    elif result.source_type == "bilibili":
+        m = re.search(r"/video/([A-Za-z0-9]+)", result.url)
+        vid = m.group(1) if m else _slugify(result.title or "video")
+        filename = f"{vid}.md"
+        subdir = f"video/{month_dir}"
+    elif result.source_type == "reddit":
+        domain = _extract_domain(result.url)
+        slug = _slugify(result.title or domain)
+        filename = f"{slug}.md"
+        subdir = f"reddit/{month_dir}"
     else:
         domain = _extract_domain(result.url)
         slug = _slugify(result.title or domain)

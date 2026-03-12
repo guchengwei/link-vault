@@ -76,6 +76,9 @@ _YT_RE = re.compile(
 _REDDIT_RE = re.compile(
     r"https?://(?:www\.)?(?:old\.)?reddit\.com/r/\w+", re.I
 )
+_BILIBILI_RE = re.compile(
+    r"https?://(?:www\.)?bilibili\.com/video/([A-Za-z0-9]+)", re.I
+)
 
 
 def classify_url(url: str) -> str:
@@ -86,6 +89,8 @@ def classify_url(url: str) -> str:
         return "youtube"
     if _REDDIT_RE.match(url):
         return "reddit"
+    if _BILIBILI_RE.match(url):
+        return "bilibili"
     return "webpage"
 
 # ---------------------------------------------------------------------------
@@ -307,7 +312,7 @@ def fetch_tweet(url: str, timeout: int = 15, retries: int = 2) -> FetchResult:
 # YouTube fetcher (yt-dlp for metadata + transcript)
 # ---------------------------------------------------------------------------
 
-def fetch_youtube(url: str, timeout: int = 30) -> FetchResult:
+def fetch_youtube(url: str, timeout: int = 30, **kwargs) -> FetchResult:
     m = _YT_RE.match(url)
     video_id = m.group(1) if m else ""
     canonical = f"https://www.youtube.com/watch?v={video_id}" if video_id else url
@@ -356,6 +361,23 @@ def fetch_youtube(url: str, timeout: int = 30) -> FetchResult:
     except Exception:
         pass
 
+    # Fallback: use faster-whisper if no subtitles found
+    if not transcript:
+        try:
+            from .transcription import transcribe_url as _whisper_transcribe
+            transcribe_config = kwargs.get("transcribe_config")
+            whisper_text = _whisper_transcribe(url, config=transcribe_config)
+            if whisper_text:
+                transcript = whisper_text
+                transcript_method = "whisper"
+        except Exception:
+            pass
+
+    if not transcript:
+        transcript_method = None
+    elif "transcript_method" not in dir():
+        transcript_method = "subtitles"
+
     text_parts = []
     if description:
         text_parts.append(description)
@@ -369,6 +391,7 @@ def fetch_youtube(url: str, timeout: int = 30) -> FetchResult:
         "upload_date": info.get("upload_date", ""),
         "channel_id": info.get("channel_id", ""),
         "has_transcript": bool(transcript),
+        "transcript_method": transcript_method,
     }
 
     return FetchResult(
@@ -377,6 +400,75 @@ def fetch_youtube(url: str, timeout: int = 30) -> FetchResult:
         text="\n\n".join(text_parts),
         metadata=meta,
     )
+
+# ---------------------------------------------------------------------------
+# Generic video fetcher (yt-dlp metadata + faster-whisper transcription)
+# ---------------------------------------------------------------------------
+
+def fetch_video(url: str, timeout: int = 30, **kwargs) -> FetchResult:
+    """Fetch video metadata via yt-dlp and transcribe audio with faster-whisper."""
+    source_type = classify_url(url)
+
+    # Step 1: metadata via yt-dlp
+    try:
+        proc = subprocess.run(
+            ["yt-dlp", "--dump-json", "--no-download", "--no-playlist", url],
+            capture_output=True, text=True, timeout=timeout,
+        )
+        if proc.returncode != 0:
+            return FetchResult(ok=False, url=url, source_type=source_type,
+                               error=f"yt-dlp metadata failed: {proc.stderr[:300]}")
+        info = json.loads(proc.stdout)
+    except FileNotFoundError:
+        return FetchResult(ok=False, url=url, source_type=source_type,
+                           error="yt-dlp not installed")
+    except subprocess.TimeoutExpired:
+        return FetchResult(ok=False, url=url, source_type=source_type,
+                           error="yt-dlp timed out")
+    except json.JSONDecodeError:
+        return FetchResult(ok=False, url=url, source_type=source_type,
+                           error="yt-dlp returned invalid JSON")
+
+    title = info.get("title", "")
+    author = info.get("uploader", info.get("channel", ""))
+    description = info.get("description", "")
+    canonical = info.get("webpage_url", url)
+
+    # Step 2: transcribe audio with faster-whisper
+    transcript = None
+    transcript_method = None
+    transcribe_config = kwargs.get("transcribe_config")
+    try:
+        from .transcription import transcribe_url as _whisper_transcribe
+        transcript = _whisper_transcribe(url, config=transcribe_config)
+        if transcript:
+            transcript_method = "whisper"
+    except Exception as e:
+        print(f"[link-vault] Transcription skipped: {e}", file=sys.stderr)
+
+    text_parts = []
+    if description:
+        text_parts.append(description)
+    if transcript:
+        text_parts.append(f"\n--- Transcript ---\n{transcript}")
+
+    meta = {
+        "duration": info.get("duration"),
+        "view_count": info.get("view_count"),
+        "like_count": info.get("like_count"),
+        "upload_date": info.get("upload_date", ""),
+        "has_transcript": bool(transcript),
+        "transcript_method": transcript_method,
+        "platform": info.get("extractor", source_type),
+    }
+
+    return FetchResult(
+        ok=True, url=canonical, source_type=source_type,
+        title=title, author=author,
+        text="\n\n".join(text_parts),
+        metadata=meta,
+    )
+
 
 # ---------------------------------------------------------------------------
 # Generic webpage fallback (readability + bs4, no Camofox)
@@ -510,7 +602,8 @@ def fetch(url: str, camofox_port: int = 9377, **kwargs) -> FetchResult:
             camofox_result = _enrich_tweet(camofox_result, url)
         elif source == "youtube":
             # Merge yt-dlp data (transcript, metadata) into Camofox result
-            yt_result = fetch_youtube(url, **{k: v for k, v in kwargs.items() if k in ("timeout",)})
+            yt_result = fetch_youtube(url, **{k: v for k, v in kwargs.items()
+                                              if k in ("timeout", "transcribe_config")})
             if yt_result.ok:
                 camofox_result.title = yt_result.title or camofox_result.title
                 camofox_result.author = yt_result.author or camofox_result.author
@@ -518,13 +611,28 @@ def fetch(url: str, camofox_port: int = 9377, **kwargs) -> FetchResult:
                 if yt_result.metadata.get("has_transcript") and "Transcript" not in camofox_result.text:
                     camofox_result.text += "\n\n" + yt_result.text
                 camofox_result.metadata.update(yt_result.metadata)
+        elif source == "bilibili":
+            # Merge yt-dlp metadata + whisper transcript into Camofox result
+            vid_result = fetch_video(url, **{k: v for k, v in kwargs.items()
+                                             if k in ("timeout", "transcribe_config")})
+            if vid_result.ok:
+                camofox_result.title = vid_result.title or camofox_result.title
+                camofox_result.author = vid_result.author or camofox_result.author
+                camofox_result.source_type = vid_result.source_type
+                if vid_result.metadata.get("has_transcript") and "Transcript" not in camofox_result.text:
+                    camofox_result.text += "\n\n" + vid_result.text
+                camofox_result.metadata.update(vid_result.metadata)
         return camofox_result
 
     # --- Step 3: Fallbacks when Camofox is unavailable ---
     if source == "tweet":
         return fetch_tweet(url, **{k: v for k, v in kwargs.items() if k in ("timeout", "retries")})
     elif source == "youtube":
-        return fetch_youtube(url, **{k: v for k, v in kwargs.items() if k in ("timeout",)})
+        return fetch_youtube(url, **{k: v for k, v in kwargs.items()
+                                     if k in ("timeout", "transcribe_config")})
+    elif source == "bilibili":
+        return fetch_video(url, **{k: v for k, v in kwargs.items()
+                                   if k in ("timeout", "transcribe_config")})
     else:
         return fetch_webpage(url, **{k: v for k, v in kwargs.items() if k in ("timeout",)})
 

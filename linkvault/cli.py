@@ -11,7 +11,10 @@ Usage:
 
 import argparse
 import json
+import logging
+import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .fetchers import fetch, fetch_batch, FetchResult
@@ -20,21 +23,52 @@ from .vectordb import VectorDB
 
 DEFAULT_DB = "linkvault.db"
 DEFAULT_CONTENT_DIR = "content"
+LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
+
+
+def _setup_log():
+    LOG_DIR.mkdir(exist_ok=True)
+    log_file = LOG_DIR / "cli.log"
+    logging.basicConfig(
+        filename=str(log_file),
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+    )
+    return logging.getLogger("linkvault")
+
+
+_log = _setup_log()
 
 
 def cmd_ingest(args):
+    _log.info("ingest called | urls=%s | db=%s | content_dir=%s | cwd=%s",
+              args.urls, args.db, args.content_dir, os.getcwd())
     db = VectorDB(args.db)
+
+    # Build transcription config
+    transcribe_config = None
+    if not args.no_transcribe:
+        from .transcription import TranscriptionConfig
+        transcribe_config = TranscriptionConfig(model_size=args.whisper_model)
+
     results = []
     for url in args.urls:
         print(f"Fetching: {url} ...", file=sys.stderr)
-        result = fetch(url)
+        _log.info("fetching %s", url)
+        result = fetch(url, transcribe_config=transcribe_config)
         if not result.ok:
+            _log.error("fetch failed | url=%s | error=%s", url, result.error)
             print(f"  ERROR: {result.error}", file=sys.stderr)
             results.append(result)
             continue
 
+        _log.info("fetch ok | url=%s | type=%s | title=%s | text_len=%d",
+                   url, result.source_type, result.title, len(result.text or ""))
+
         # Save markdown
         md_path = save_result(result, base_dir=args.content_dir)
+        _log.info("saved markdown | path=%s", md_path)
         print(f"  Saved: {md_path}", file=sys.stderr)
 
         # Index in vector DB
@@ -47,6 +81,7 @@ def cmd_ingest(args):
             metadata=result.metadata,
             md_path=md_path or "",
         )
+        _log.info("indexed | doc_id=%d | url=%s", doc_id, url)
         print(f"  Indexed: doc_id={doc_id}", file=sys.stderr)
         results.append(result)
 
@@ -112,6 +147,11 @@ def main():
 
     p_ingest = sub.add_parser("ingest", help="Fetch, save, and index URLs")
     p_ingest.add_argument("urls", nargs="+", help="URL(s) to ingest")
+    p_ingest.add_argument("--whisper-model", default="small",
+                          choices=["tiny", "base", "small", "medium", "large-v3"],
+                          help="Whisper model size for video transcription (default: small)")
+    p_ingest.add_argument("--no-transcribe", action="store_true",
+                          help="Skip audio transcription for video URLs")
 
     p_search = sub.add_parser("search", help="Semantic search across content")
     p_search.add_argument("query", help="Search query")
