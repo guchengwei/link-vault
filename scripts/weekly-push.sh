@@ -17,15 +17,16 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$REPO_DIR"
 
-# Check for changes
-if git diff --quiet HEAD -- content/ linkvault.db 2>/dev/null && \
-   [ -z "$(git ls-files --others --exclude-standard content/)" ]; then
+# Force-stage ignored vault payload so git can detect whether anything changed.
+git add -f content/ linkvault.db 2>/dev/null || true
+
+# Check for staged changes only after force-adding ignored paths.
+if git diff --cached --quiet --exit-code; then
     echo "[weekly-push] No new content to push."
     exit 0
 fi
 
 WEEK=$(date +%Y-W%V)
-git add content/ linkvault.db 2>/dev/null || true
 git commit -m "content: weekly sync ${WEEK}
 
 Auto-committed by weekly-push.sh" || { echo "[weekly-push] Nothing to commit."; exit 0; }
