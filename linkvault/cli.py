@@ -17,7 +17,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .fetchers import fetch, fetch_batch, FetchResult
+from .fetchers import fetch, fetch_batch, FetchResult, validate_fetch_result
 from .storage import save_result
 from .vectordb import VectorDB
 
@@ -63,8 +63,24 @@ def cmd_ingest(args):
             results.append(result)
             continue
 
-        _log.info("fetch ok | url=%s | type=%s | title=%s | text_len=%d",
-                   url, result.source_type, result.title, len(result.text or ""))
+        original_url = url
+        resolved_url = result.metadata.get("resolved_url") if isinstance(result.metadata, dict) else None
+        final_url = result.metadata.get("final_url") if isinstance(result.metadata, dict) else None
+        _log.info("fetch ok | url=%s | resolved_url=%s | final_url=%s | type=%s | title=%s | text_len=%d",
+                   original_url, resolved_url, final_url, result.source_type, result.title, len(result.text or ""))
+
+        is_valid, rejection_reason = validate_fetch_result(result)
+        if not is_valid:
+            result.ok = False
+            result.error_code = "rejected_fetch_result"
+            result.error = f"Rejected fetch result: {rejection_reason}"
+            if isinstance(result.metadata, dict):
+                result.metadata.setdefault("error_code", result.error_code)
+            _log.error("fetch rejected | original=%s | resolved=%s | final_url=%s | reason=%s",
+                       original_url, resolved_url, final_url, rejection_reason)
+            print(f"  ERROR: {result.error}", file=sys.stderr)
+            results.append(result)
+            continue
 
         # Save markdown
         md_path = save_result(result, base_dir=args.content_dir)

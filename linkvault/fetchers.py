@@ -29,7 +29,7 @@ import urllib.error
 import urllib.request
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -59,6 +59,7 @@ class FetchResult:
     text: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
+    error_code: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -92,6 +93,84 @@ def classify_url(url: str) -> str:
     if _BILIBILI_RE.match(url):
         return "bilibili"
     return "webpage"
+
+
+_VERIFICATION_TITLE_MARKERS = [
+    "验证码",
+    "安全验证",
+    "人机验证",
+    "访问验证",
+    "请完成验证",
+]
+
+
+class _HeadThenGetRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Preserve method across redirects during URL resolution."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return urllib.request.Request(
+            newurl,
+            data=req.data,
+            headers=dict(req.headers),
+            origin_req_host=req.origin_req_host,
+            unverifiable=True,
+            method=req.get_method(),
+        )
+
+
+def resolve_url(url: str, timeout: int = 15) -> str:
+    """Resolve redirects cheaply for routing/classification, falling back to the original URL."""
+
+    opener = urllib.request.build_opener(_HeadThenGetRedirectHandler)
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; LinkVault/0.1)"}
+
+    for method in ("HEAD", "GET"):
+        try:
+            req = urllib.request.Request(url, headers=headers, method=method)
+            with opener.open(req, timeout=timeout) as resp:
+                final_url = getattr(resp, "url", "") or url
+                return final_url
+        except Exception:
+            continue
+    return url
+
+
+def _has_verification_title_marker(title: str) -> Optional[str]:
+    title_norm = (title or "").strip()
+    if not title_norm:
+        return None
+    for marker in _VERIFICATION_TITLE_MARKERS:
+        if marker in title_norm:
+            return marker
+    return None
+
+
+def validate_fetch_result(result: FetchResult) -> Tuple[bool, Optional[str]]:
+    """Reject obviously bad/interstitial fetch results before save/index."""
+
+    text = result.text or ""
+    title = result.title or ""
+    final_url = result.metadata.get("final_url") if isinstance(result.metadata, dict) else None
+    content_type = result.metadata.get("content_type") if isinstance(result.metadata, dict) else None
+    status = result.metadata.get("http_status") if isinstance(result.metadata, dict) else None
+
+    debug_bits = []
+    if final_url:
+        debug_bits.append(f"final_url={final_url}")
+    if status:
+        debug_bits.append(f"status={status}")
+    if content_type:
+        debug_bits.append(f"content_type={content_type}")
+    debug_suffix = f" ({', '.join(debug_bits)})" if debug_bits else ""
+
+    if not text.strip():
+        return False, f"empty body text{debug_suffix}"
+
+    marker = _has_verification_title_marker(title)
+    if marker:
+        return False, f"verification page detected (title={title}; marker={marker}){debug_suffix}"
+
+    return True, None
 
 # ---------------------------------------------------------------------------
 # Camofox: primary fetcher for ANY URL
@@ -154,7 +233,7 @@ def _parse_snapshot_to_text(snapshot: str) -> tuple:
     return title, "\n".join(deduped)
 
 
-def fetch_via_camofox(url: str, port: int = 9377, wait: float = 6) -> Optional[FetchResult]:
+def fetch_via_camofox(url: str, port: int = 9377, wait: float = 6, source_type: Optional[str] = None) -> Optional[FetchResult]:
     """Fetch any URL via Camofox browser. Returns FetchResult or None if unavailable."""
     if not _camofox_available(port):
         return None
@@ -163,12 +242,12 @@ def fetch_via_camofox(url: str, port: int = 9377, wait: float = 6) -> Optional[F
     print(f"[link-vault] Fetching via Camofox: {url}", file=sys.stderr)
 
     snapshot = camofox_fetch_page(url, session_key, wait=wait, port=port)
+    source_type = source_type or classify_url(url)
     if not snapshot:
-        return FetchResult(ok=False, url=url, source_type=classify_url(url),
+        return FetchResult(ok=False, url=url, source_type=source_type,
                            error="Camofox returned empty snapshot")
 
     title, text = _parse_snapshot_to_text(snapshot)
-    source_type = classify_url(url)
 
     return FetchResult(
         ok=True, url=url, source_type=source_type,
@@ -516,24 +595,25 @@ def fetch_webpage(url: str, timeout: int = 15) -> FetchResult:
             raw_bytes = resp.read()
             content_encoding = resp.headers.get("Content-Encoding", "")
             final_url = resp.url
+            content_type = resp.headers.get("Content-Type", "")
+            status = getattr(resp, "status", None)
 
-        # Decompress if needed
-        try:
-            raw_bytes = _decompress_response(raw_bytes, content_encoding)
-        except Exception as e:
-            return FetchResult(ok=False, url=url, source_type="webpage",
-                               error=f"Decompression failed ({content_encoding}): {e}")
+            # Decompress if needed
+            try:
+                raw_bytes = _decompress_response(raw_bytes, content_encoding)
+            except Exception as e:
+                return FetchResult(ok=False, url=url, source_type="webpage",
+                                   error=f"Decompression failed ({content_encoding}): {e}")
 
-        # Detect charset from Content-Type, default to utf-8
-        ct = resp.headers.get("Content-Type", "")
-        charset = "utf-8"
-        for part in ct.split(";"):
-            part = part.strip()
-            if part.lower().startswith("charset="):
-                charset = part.split("=", 1)[1].strip().strip('"')
-                break
+            # Detect charset from Content-Type, default to utf-8
+            charset = "utf-8"
+            for part in content_type.split(";"):
+                part = part.strip()
+                if part.lower().startswith("charset="):
+                    charset = part.split("=", 1)[1].strip().strip('"')
+                    break
 
-        html = raw_bytes.decode(charset, errors="replace")
+            html = raw_bytes.decode(charset, errors="replace")
     except Exception as e:
         return FetchResult(ok=False, url=url, source_type="webpage",
                            error=f"Fetch failed: {e}")
@@ -568,10 +648,10 @@ def fetch_webpage(url: str, timeout: int = 15) -> FetchResult:
             ok=False, url=url, source_type="webpage",
             title=title or "",
             error="Extracted text appears to be binary/garbled (not readable)",
-            metadata={"final_url": final_url},
+            metadata={"final_url": final_url, "content_type": content_type, "http_status": status},
         )
 
-    meta = {"final_url": final_url}
+    meta = {"final_url": final_url, "content_type": content_type, "http_status": status}
     return FetchResult(
         ok=True, url=url, source_type="webpage",
         title=title or "", author="", text=text,
@@ -587,23 +667,30 @@ def fetch(url: str, camofox_port: int = 9377, **kwargs) -> FetchResult:
     Fetch content from ANY URL.
 
     Strategy:
-      1. Try Camofox first (handles everything: Reddit, X, paywalled, SPAs)
-      2. Layer source-specific enrichment (FxTwitter stats, yt-dlp transcript)
-      3. If Camofox unavailable, fall back to source-specific adapters
+      1. Resolve redirects for routing/classification
+      2. Try Camofox first (handles everything: Reddit, X, paywalled, SPAs)
+      3. Layer source-specific enrichment (FxTwitter stats, yt-dlp transcript)
+      4. If Camofox unavailable, fall back to source-specific adapters
     """
-    source = classify_url(url)
+    original_url = url
+    resolved_url = resolve_url(url, timeout=kwargs.get("timeout", 15))
+    source = classify_url(resolved_url)
 
     # --- Step 1: Try Camofox for everything ---
-    camofox_result = fetch_via_camofox(url, port=camofox_port)
+    camofox_result = fetch_via_camofox(url, port=camofox_port, source_type=source)
 
     if camofox_result and camofox_result.ok:
+        camofox_result.metadata.setdefault("original_url", original_url)
+        camofox_result.metadata.setdefault("resolved_url", resolved_url)
+        if resolved_url != original_url:
+            camofox_result.metadata.setdefault("classification_url", resolved_url)
         # Step 2: Layer enrichment for known sources
         if source == "tweet":
-            camofox_result = _enrich_tweet(camofox_result, url)
+            camofox_result = _enrich_tweet(camofox_result, resolved_url)
         elif source == "youtube":
             # Merge yt-dlp data (transcript, metadata) into Camofox result
-            yt_result = fetch_youtube(url, **{k: v for k, v in kwargs.items()
-                                              if k in ("timeout", "transcribe_config")})
+            yt_result = fetch_youtube(resolved_url, **{k: v for k, v in kwargs.items()
+                                                       if k in ("timeout", "transcribe_config")})
             if yt_result.ok:
                 camofox_result.title = yt_result.title or camofox_result.title
                 camofox_result.author = yt_result.author or camofox_result.author
@@ -613,8 +700,8 @@ def fetch(url: str, camofox_port: int = 9377, **kwargs) -> FetchResult:
                 camofox_result.metadata.update(yt_result.metadata)
         elif source == "bilibili":
             # Merge yt-dlp metadata + whisper transcript into Camofox result
-            vid_result = fetch_video(url, **{k: v for k, v in kwargs.items()
-                                             if k in ("timeout", "transcribe_config")})
+            vid_result = fetch_video(resolved_url, **{k: v for k, v in kwargs.items()
+                                                      if k in ("timeout", "transcribe_config")})
             if vid_result.ok:
                 camofox_result.title = vid_result.title or camofox_result.title
                 camofox_result.author = vid_result.author or camofox_result.author
@@ -626,15 +713,22 @@ def fetch(url: str, camofox_port: int = 9377, **kwargs) -> FetchResult:
 
     # --- Step 3: Fallbacks when Camofox is unavailable ---
     if source == "tweet":
-        return fetch_tweet(url, **{k: v for k, v in kwargs.items() if k in ("timeout", "retries")})
+        result = fetch_tweet(resolved_url, **{k: v for k, v in kwargs.items() if k in ("timeout", "retries")})
     elif source == "youtube":
-        return fetch_youtube(url, **{k: v for k, v in kwargs.items()
-                                     if k in ("timeout", "transcribe_config")})
+        result = fetch_youtube(resolved_url, **{k: v for k, v in kwargs.items()
+                                                if k in ("timeout", "transcribe_config")})
     elif source == "bilibili":
-        return fetch_video(url, **{k: v for k, v in kwargs.items()
-                                   if k in ("timeout", "transcribe_config")})
+        result = fetch_video(resolved_url, **{k: v for k, v in kwargs.items()
+                                              if k in ("timeout", "transcribe_config")})
     else:
-        return fetch_webpage(url, **{k: v for k, v in kwargs.items() if k in ("timeout",)})
+        result = fetch_webpage(url, **{k: v for k, v in kwargs.items() if k in ("timeout",)})
+
+    if isinstance(result.metadata, dict):
+        result.metadata.setdefault("original_url", original_url)
+        result.metadata.setdefault("resolved_url", resolved_url)
+        if resolved_url != original_url:
+            result.metadata.setdefault("classification_url", resolved_url)
+    return result
 
 
 def fetch_batch(urls: List[str], **kwargs) -> List[FetchResult]:
