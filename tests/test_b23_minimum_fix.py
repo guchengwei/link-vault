@@ -43,6 +43,27 @@ class TestB23MinimumFix(unittest.TestCase):
         self.assertTrue(is_valid)
         self.assertIsNone(reason)
 
+    def test_validate_fetch_result_accepts_tweet_with_article_only(self):
+        from linkvault.fetchers import FetchResult, validate_fetch_result
+
+        result = FetchResult(
+            ok=True,
+            url="https://x.com/justinlin610/status/2037116325210829168",
+            source_type="tweet",
+            title="@JustinLin610",
+            text="",
+            metadata={
+                "article": {
+                    "title": 'From "Reasoning" Thinking to "Agentic" Thinking',
+                    "full_text": "Long-form article body from X article card.",
+                }
+            },
+        )
+
+        is_valid, reason = validate_fetch_result(result)
+        self.assertTrue(is_valid)
+        self.assertIsNone(reason)
+
     def test_fetch_classifies_on_resolved_url(self):
         from linkvault import fetchers
 

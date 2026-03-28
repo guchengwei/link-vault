@@ -150,9 +150,14 @@ def validate_fetch_result(result: FetchResult) -> Tuple[bool, Optional[str]]:
 
     text = result.text or ""
     title = result.title or ""
-    final_url = result.metadata.get("final_url") if isinstance(result.metadata, dict) else None
-    content_type = result.metadata.get("content_type") if isinstance(result.metadata, dict) else None
-    status = result.metadata.get("http_status") if isinstance(result.metadata, dict) else None
+    metadata = result.metadata if isinstance(result.metadata, dict) else {}
+    final_url = metadata.get("final_url")
+    content_type = metadata.get("content_type")
+    status = metadata.get("http_status")
+    article_text = ""
+    article = metadata.get("article") if isinstance(metadata.get("article"), dict) else None
+    if article:
+        article_text = article.get("full_text", "") or ""
 
     debug_bits = []
     if final_url:
@@ -163,7 +168,7 @@ def validate_fetch_result(result: FetchResult) -> Tuple[bool, Optional[str]]:
         debug_bits.append(f"content_type={content_type}")
     debug_suffix = f" ({', '.join(debug_bits)})" if debug_bits else ""
 
-    if not text.strip():
+    if not text.strip() and not article_text.strip():
         return False, f"empty body text{debug_suffix}"
 
     marker = _has_verification_title_marker(title)
