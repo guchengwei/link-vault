@@ -48,3 +48,75 @@ def test_build_homepage_index_creates_root_listing(tmp_path):
     assert "https://guchengwei.github.io/link-vault/d/x-123-example/" in html
     assert "@example" in html
     assert "2026-04-05" in html
+
+
+def test_render_homepage_index_groups_by_month_and_shows_counts(tmp_path):
+    from linkvault.site_index import build_homepage_index
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+
+    fixtures = [
+        (
+            "2026-04",
+            "x-123-example",
+            {
+                "title": "April X Post",
+                "source_type": "x",
+                "source_url": "https://x.com/example/status/123",
+                "author_handle": "example",
+                "created_at": "2026-04-05T12:00:00Z",
+            },
+            "https://guchengwei.github.io/link-vault/d/x-123-example/",
+        ),
+        (
+            "2026-04",
+            "web-hello",
+            {
+                "title": "April Web Post",
+                "source_type": "web",
+                "source_url": "https://example.com/post",
+                "author": "Example Author",
+                "created_at": "2026-04-01T08:00:00Z",
+            },
+            "https://guchengwei.github.io/link-vault/d/web-hello/",
+        ),
+        (
+            "2026-03",
+            "x-999-older",
+            {
+                "title": "March X Post",
+                "source_type": "x",
+                "source_url": "https://x.com/older/status/999",
+                "author_handle": "older",
+                "created_at": "2026-03-28T09:00:00Z",
+            },
+            "https://guchengwei.github.io/link-vault/d/x-999-older/",
+        ),
+    ]
+
+    for month, slug, document, public_url in fixtures:
+        item_dir = content_dir / month / slug
+        item_dir.mkdir(parents=True)
+        (item_dir / "document.json").write_text(json.dumps(document), encoding="utf-8")
+        (item_dir / "publish.json").write_text(
+            json.dumps(
+                {
+                    "published": True,
+                    "public_url": public_url,
+                    "target": {
+                        "site_path": f"site/d/{slug}/index.html",
+                        "bundle_path": f"content/{month}/{slug}",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    html = build_homepage_index(content_dir=content_dir, site_dir=site_dir).read_text(encoding="utf-8")
+
+    assert "3 published captures" in html
+    assert 'class="section-title">2026-04' in html
+    assert 'class="section-title">2026-03' in html
+    assert "2 items · x: 1 · web: 1" in html
+    assert "1 item · x: 1" in html

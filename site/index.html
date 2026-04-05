@@ -6,25 +6,47 @@
   <title>link-vault</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 2rem auto; max-width: 860px; padding: 0 1rem; line-height: 1.5; }
-    h1 { margin-bottom: 0.25rem; }
-    p { color: #666; margin-top: 0; }
-    ul { list-style: none; padding: 0; }
-    li { border-top: 1px solid #ddd; padding: 0.9rem 0; }
-    li:last-child { border-bottom: 1px solid #ddd; }
-    a { text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .meta { color: #666; font-size: 0.95rem; margin-top: 0.2rem; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; background: #f5f5f7; color: #111; }
+    main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    .hero { background: #fff; border: 1px solid #ddd; border-radius: 16px; padding: 1.25rem 1.25rem 1rem; margin-bottom: 1rem; }
+    h1 { margin: 0 0 0.35rem; font-size: 2rem; }
+    .subtitle { color: #666; margin: 0 0 1rem; }
+    .stats { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+    .stats li { background: #f2f2f2; border-radius: 999px; padding: 0.4rem 0.7rem; font-size: 0.95rem; }
+    .month-section { margin-top: 1.25rem; }
+    .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; align-items: baseline; margin-bottom: 0.75rem; }
+    .section-title { margin: 0; font-size: 1.1rem; }
+    .section-meta { color: #666; font-size: 0.95rem; }
+    .card-list { display: grid; gap: 0.75rem; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 14px; padding: 0.9rem 1rem; }
+    .card-title { color: inherit; display: inline-block; font-weight: 600; text-decoration: none; }
+    .card-title:hover { text-decoration: underline; }
+    .meta { color: #666; font-size: 0.95rem; margin-top: 0.3rem; }
+    .meta a { color: inherit; }
+    .empty { color: #666; background: #fff; border: 1px solid #ddd; border-radius: 14px; padding: 1rem; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111214; color: #f5f5f7; }
+      .hero, .card, .empty { background: #18191c; border-color: #34363b; }
+      .subtitle, .section-meta, .meta { color: #a7acb5; }
+      .stats li { background: #22242a; }
+    }
   </style>
 </head>
 <body>
-  <h1>link-vault</h1>
-  <p>Published captures from xfetch.</p>
-  <ul>
-    <li><a href="https://guchengwei.github.io/link-vault/d/x-2040000216456143002-zodchiii/">8 Claude Code Hooks That Automate What You Keep Forgetting</a><div class="meta">x · @zodchiii · 2026-04-03 · <a href="https://x.com/zodchiii/status/2040000216456143002">source</a></div></li>
-<li><a href="https://guchengwei.github.io/link-vault/d/x-2037728835501019327-jiroucaigou/">想学美股不知道看谁？多平台优质博主盘点</a><div class="meta">x · @jiroucaigou · 2026-03-28 · <a href="https://x.com/jiroucaigou/status/2037728835501019327?s=20">source</a></div></li>
-<li><a href="https://guchengwei.github.io/link-vault/d/x-2037579506429657198-yq-acc/">Agents Don&#x27;t Click Ads. That Changes Everything.</a><div class="meta">x · @yq_acc · 2026-03-27 · <a href="https://x.com/yq_acc/status/2037579506429657198?s=46">source</a></div></li>
-<li><a href="https://guchengwei.github.io/link-vault/d/x-20-jack/">just setting up my twttr</a><div class="meta">x · @jack · 2006-03-21 · <a href="https://x.com/jack/status/20">source</a></div></li>
-  </ul>
+  <main>
+    <section class="hero">
+      <h1>link-vault</h1>
+      <p class="subtitle">Published captures from xfetch.</p>
+      <ul class="stats">
+        <li>4 published captures</li>
+        <li>Latest capture: <strong>2026-04-03</strong></li>
+      </ul>
+    </section>
+    <section class="month-section"><div class="section-head"><h2 class="section-title">2026-04</h2><div class="section-meta">1 item · x: 1</div></div><div class="card-list"><article class="card"><a class="card-title" href="https://guchengwei.github.io/link-vault/d/x-2040000216456143002-zodchiii/">8 Claude Code Hooks That Automate What You Keep Forgetting</a><div class="meta">x · @zodchiii · 2026-04-03 · <a href="https://x.com/zodchiii/status/2040000216456143002">source</a></div></article></div></section>
+<section class="month-section"><div class="section-head"><h2 class="section-title">2026-03</h2><div class="section-meta">2 items · x: 2</div></div><div class="card-list"><article class="card"><a class="card-title" href="https://guchengwei.github.io/link-vault/d/x-2037728835501019327-jiroucaigou/">想学美股不知道看谁？多平台优质博主盘点</a><div class="meta">x · @jiroucaigou · 2026-03-28 · <a href="https://x.com/jiroucaigou/status/2037728835501019327?s=20">source</a></div></article>
+<article class="card"><a class="card-title" href="https://guchengwei.github.io/link-vault/d/x-2037579506429657198-yq-acc/">Agents Don&#x27;t Click Ads. That Changes Everything.</a><div class="meta">x · @yq_acc · 2026-03-27 · <a href="https://x.com/yq_acc/status/2037579506429657198?s=46">source</a></div></article></div></section>
+<section class="month-section"><div class="section-head"><h2 class="section-title">2006-03</h2><div class="section-meta">1 item · x: 1</div></div><div class="card-list"><article class="card"><a class="card-title" href="https://guchengwei.github.io/link-vault/d/x-20-jack/">just setting up my twttr</a><div class="meta">x · @jack · 2006-03-21 · <a href="https://x.com/jack/status/20">source</a></div></article></div></section>
+  </main>
 </body>
 </html>
