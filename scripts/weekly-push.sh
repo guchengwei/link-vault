@@ -17,8 +17,10 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
 cd "$REPO_DIR"
 
+python3 -m linkvault.site_index
+
 # Force-stage ignored vault payload so git can detect whether anything changed.
-git add -f content/ linkvault.db 2>/dev/null || true
+git add -f content/ linkvault.db site/ 2>/dev/null || true
 
 # Check for staged changes only after force-adding ignored paths.
 if git diff --cached --quiet --exit-code; then
