@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>8 Claude Code Hooks That Automate What You Keep Forgetting</title>
+  <link rel="canonical" href="https://guchengwei.github.io/link-vault/d/x-2040000216456143002-zodchiii/">
+</head>
+<body>
+  <h1>8 Claude Code Hooks That Automate What You Keep Forgetting</h1>
+  <p>Source: <a href="https://x.com/zodchiii/status/2040000216456143002">https://x.com/zodchiii/status/2040000216456143002</a></p>
+  <p>Author: @zodchiii</p>
+  <p>Created: 2026-04-03T09:35:27Z</p>
+  <div>8 Claude Code Hooks That Automate What You Keep Forgetting<br>
+<br>
+Have you ever told Claude Code to do something and it just didn&#x27;t?<br>
+You said format the code - It didn&#x27;t. You said don&#x27;t touch that file - It did. <br>
+You said run tests before finishing - It forgot.<br>
+<br>
+Have you ever told Claude Code to do something and it just didn&#x27;t?<br>
+<br>
+You said format the code - It didn&#x27;t. You said don&#x27;t touch that file - It did.<br>
+<br>
+You said run tests before finishing - It forgot.<br>
+<br>
+That&#x27;s because CLAUDE.md is a suggestion.<br>
+<br>
+Claude reads it and follows it about 80% of the time. Hooks are different. They&#x27;re automatic actions that fire every time Claude edits a file, runs a command, or finishes a task.<br>
+<br>
+Below I will share 8 personal hooks you can copy straight into your settings.json and never think about again 👇<br>
+<br>
+Before we dive in, I share daily notes on AI &amp; vibe coding in my Telegram channel: https://t.me/zodchixquant🧠<br>
+<br>
+How hooks work (30-second version) What are hooks?<br>
+<br>
+Hooks are automatic actions that run every time Claude Code does something, like editing a file or running a command.<br>
+<br>
+You set them up once and they work in the background without you thinking about it.<br>
+<br>
+The two you&#x27;ll use most:<br>
+<br>
+PreToolUse runs before Claude does something. You can inspect the action and block it by returning exit code 2. Think of it as a bouncer.<br>
+<br>
+PostToolUse runs after Claude does something. You can run cleanup, formatting, tests, or logging. Think of it as quality control on the assembly line.<br>
+<br>
+You configure them in .claude/settings.json in your project root. That file gets committed to git, so your whole team gets the same hooks automatically.<br>
+<br>
+Full documentation: https://code.claude.com/docs/en/hooks<br>
+<br>
+1. Auto-format every file Claude touches<br>
+<br>
+The problem: Claude writes correct code that breaks your formatting rules. You add &quot;always run Prettier&quot; to CLAUDE.md and it works most of the time, but not always.<br>
+<br>
+The hook: Prettier runs automatically after every file write or edit.<br>
+<br>
+Swap npx prettier --write for whatever formatter you use: black for Python, gofmt for Go, rustfmt for Rust. The pattern is the same.<br>
+<br>
+This was the first hook I set up and honestly it should be the default for every project. No more &quot;Claude forgot to format&quot; commits.<br>
+<br>
+2. Block dangerous commands<br>
+<br>
+The problem: Claude is powerful enough to run rm -rf, git reset --hard, DROP TABLE, or curl to random URLs. It probably won&#x27;t, but &quot;probably&quot; isn&#x27;t good enough when it&#x27;s your production database.<br>
+<br>
+The hook: Block destructive commands before they execute.<br>
+<br>
+Create .claude/hooks/block-dangerous.sh:<br>
+<br>
+Then add to your settings.json:<br>
+<br>
+Exit code 2 is the key. It blocks the action and sends your error message back to Claude so it can try a safer approach. Exit code 0 means &quot;go ahead.&quot; Anything else logs a warning but doesn&#x27;t block.<br>
+<br>
+3. Protect sensitive files from edits<br>
+<br>
+The problem: Claude can read and edit any file in your project. That includes .env, package-lock.json, config files, and anything else you&#x27;d rather it didn&#x27;t touch.<br>
+<br>
+The hook: Block edits to files that should be off-limits.<br>
+<br>
+Create .claude/hooks/protect-files.sh:<br>
+<br>
+4. Run tests after every edit<br>
+<br>
+The problem: Claude makes a change, says &quot;done,&quot; and you discover the tests are broken 20 minutes later when you try to commit.<br>
+<br>
+The hook: Run your test suite automatically after every code change. If tests fail, Claude sees the failure and can fix it immediately.<br>
+<br>
+The tail -5 keeps the output short so it doesn&#x27;t flood Claude&#x27;s context. You want Claude to see &quot;3 tests failed&quot; not the full 200-line test output.<br>
+<br>
+Boris Cherny, the creator of Claude Code, says giving Claude a feedback loop like this improves output quality by 2-3x. Instead of writing code and hoping it works, Claude writes code, sees the test results, and fixes failures on its own.<br>
+<br>
+5. Require passing tests before creating a PR<br>
+<br>
+The problem: Claude finishes a feature and immediately creates a PR. Tests are failing. Your reviewer sees red CI and sends it back.<br>
+<br>
+The hook: Block PR creation unless all tests pass.<br>
+<br>
+Create .claude/hooks/require-tests-for-pr.sh:<br>
+<br>
+This is a hard gate. No green tests, no PR. Claude will fix the failures first because exit code 2 tells it the action was blocked and why.<br>
+<br>
+6. Auto-lint and report errors<br>
+<br>
+The problem: Claude writes code that works but violates your ESLint rules, style guide, or type checks. You catch it during review and send it back.<br>
+<br>
+The hook: Lint after every edit. If lint fails, Claude sees the errors and fixes them before you ever look at the code.<br>
+<br>
+You can chain this with the auto-format hook from #1. Prettier runs first, then ESLint. By the time you see the code, it&#x27;s formatted and lint-clean.<br>
+<br>
+7. Log every command Claude runs<br>
+<br>
+The problem: Claude runs a lot of shell commands during a session. If something goes wrong, you want to know exactly what it did and when.<br>
+<br>
+The hook: Append every Bash command to a log file with timestamps.<br>
+<br>
+Create .claude/hooks/log-commands.sh:<br>
+<br>
+Now you have a timestamped audit trail of every command Claude ran. Add .claude/command-log.txt to your .gitignore so it doesn&#x27;t pollute your repo.<br>
+<br>
+This is especially useful for debugging: if Claude broke something three sessions ago, you can look at the log and find exactly when and what it ran.<br>
+<br>
+8. Auto-commit after each completed task<br>
+<br>
+The problem: Claude finishes a task and you forget to commit. Then it starts another task and now you have two unrelated changes mixed together in one commit.<br>
+<br>
+The hook: Automatically commit all changes when Claude stops working on a task.<br>
+<br>
+Create .claude/hooks/auto-commit.sh:<br>
+<br>
+Every time Claude finishes a response, changes get committed automatically. Your git history stays clean with atomic commits per task instead of one massive &quot;Claude changes&quot; blob at the end of the day.<br>
+<br>
+Combine this with claude -w feature-branch (worktrees) and you get isolated, auto-committed feature branches for every task.<br>
+<br>
+The complete settings.json<br>
+<br>
+Here&#x27;s everything combined into one file you can copy-paste:<br>
+<br>
+Screenshot-friendly:<br>
+<br>
+Copy this file into .claude/settings.json, create the hook scripts in .claude/hooks/, make them executable with chmod +x .claude/hooks/*.sh, and commit everything to git. Your whole team gets the same safety nets automatically.<br>
+<br>
+The difference between a good Claude Code setup and a great one isn&#x27;t the model or the prompts. It&#x27;s the hooks.<br>
+<br>
+They&#x27;re the part that runs when you&#x27;re not paying attention, catching the mistakes you&#x27;d otherwise find during code review or worse, in production.<br>
+<br>
+Set up hook #1 (auto-format) and #2 (block dangerous commands) today. That alone will save you from the most common Claude Code mistakes. Add the rest as you need them.<br>
+<br>
+I share daily notes on AI, finance, and vibe coding in my Telegram channel: https://t.me/zodchixquant<br>
+<br>
+Thanks for reading 🙏🏼</div>
+</body>
+</html>
