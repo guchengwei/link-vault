@@ -25,7 +25,7 @@ You said run tests before finishing - It forgot.</p>
 <p>Claude reads it and follows it about 80% of the time. Hooks are different. They&#x27;re automatic actions that fire every time Claude edits a file, runs a command, or finishes a task.</p>
 <p>Below I will share 8 personal hooks you can copy straight into your settings.json and never think about again 👇</p>
 <p>Before we dive in, I share daily notes on AI &amp; vibe coding in my Telegram channel: https://t.me/zodchixquant🧠</p>
-<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-01.jpg" alt=""></p>
+<p><img src="assets/image-01.jpg" alt=""></p>
 <p>How hooks work (30-second version) What are hooks?</p>
 <p>Hooks are automatic actions that run every time Claude Code does something, like editing a file or running a command.</p>
 <p>You set them up once and they work in the background without you thinking about it.</p>
@@ -39,7 +39,7 @@ You said run tests before finishing - It forgot.</p>
 .claude/settings.local.json   local only (not committed)</code></pre>
 <p>You configure them in .claude/settings.json in your project root. That file gets committed to git, so your whole team gets the same hooks automatically.</p>
 <p>Full documentation: https://code.claude.com/docs/en/hooks</p>
-<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-02.jpg" alt=""></p>
+<p><img src="assets/image-02.jpg" alt=""></p>
 <p>1. Auto-format every file Claude touches</p>
 <p>The problem: Claude writes correct code that breaks your formatting rules. You add &quot;always run Prettier&quot; to CLAUDE.md and it works most of the time, but not always.</p>
 <p>The hook: Prettier runs automatically after every file write or edit.</p>
@@ -287,7 +287,7 @@ exit 0</code></pre>
 <p>The complete settings.json</p>
 <p>Here&#x27;s everything combined into one file you can copy-paste:</p>
 <p>Screenshot-friendly:</p>
-<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-03.jpg" alt=""></p>
+<p><img src="assets/image-03.jpg" alt=""></p>
 <p>Copy this file into .claude/settings.json, create the hook scripts in .claude/hooks/, make them executable with chmod +x .claude/hooks/*.sh, and commit everything to git. Your whole team gets the same safety nets automatically.</p>
 <pre><code>{
   &quot;hooks&quot;: {
@@ -337,6 +337,6 @@ exit 0</code></pre>
 <p>Set up hook #1 (auto-format) and #2 (block dangerous commands) today. That alone will save you from the most common Claude Code mistakes. Add the rest as you need them.</p>
 <p>I share daily notes on AI, finance, and vibe coding in my Telegram channel: https://t.me/zodchixquant</p>
 <p>Thanks for reading 🙏🏼</p>
-<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-04.jpg" alt=""></p></div>
+<p><img src="assets/image-04.jpg" alt=""></p></div>
 </body>
 </html>
