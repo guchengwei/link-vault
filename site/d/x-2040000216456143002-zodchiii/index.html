@@ -10,436 +10,333 @@
   <p>Source: <a href="https://x.com/zodchiii/status/2040000216456143002">https://x.com/zodchiii/status/2040000216456143002</a></p>
   <p>Author: @zodchiii</p>
   <p>Created: 2026-04-03T09:35:27Z</p>
-  <div>8 Claude Code Hooks That Automate What You Keep Forgetting<br>
-<br>
-Have you ever told Claude Code to do something and it just didn&#x27;t?<br>
+  <div><h1>8 Claude Code Hooks That Automate What You Keep Forgetting</h1>
+<p>- Source: https://x.com/zodchiii/status/2040000216456143002<br>
+- Author: @zodchiii<br>
+- Created: 2026-04-03T09:35:27Z</p>
+<p>8 Claude Code Hooks That Automate What You Keep Forgetting</p>
+<p>Have you ever told Claude Code to do something and it just didn&#x27;t?<br>
 You said format the code - It didn&#x27;t. You said don&#x27;t touch that file - It did. <br>
-You said run tests before finishing - It forgot.<br>
-<br>
-Have you ever told Claude Code to do something and it just didn&#x27;t?<br>
-<br>
-You said format the code - It didn&#x27;t. You said don&#x27;t touch that file - It did.<br>
-<br>
-You said run tests before finishing - It forgot.<br>
-<br>
-That&#x27;s because CLAUDE.md is a suggestion.<br>
-<br>
-Claude reads it and follows it about 80% of the time. Hooks are different. They&#x27;re automatic actions that fire every time Claude edits a file, runs a command, or finishes a task.<br>
-<br>
-Below I will share 8 personal hooks you can copy straight into your settings.json and never think about again 👇<br>
-<br>
-Before we dive in, I share daily notes on AI &amp; vibe coding in my Telegram channel: https://t.me/zodchixquant🧠<br>
-<br>
-How hooks work (30-second version) What are hooks?<br>
-<br>
-Hooks are automatic actions that run every time Claude Code does something, like editing a file or running a command.<br>
-<br>
-You set them up once and they work in the background without you thinking about it.<br>
-<br>
-The two you&#x27;ll use most:<br>
-<br>
-PreToolUse runs before Claude does something. You can inspect the action and block it by returning exit code 2. Think of it as a bouncer.<br>
-<br>
-PostToolUse runs after Claude does something. You can run cleanup, formatting, tests, or logging. Think of it as quality control on the assembly line.<br>
-<br>
-```markdown<br>
-Where hooks live:<br>
-<br>
-.claude/settings.json         project-level (shared via git)<br>
-~/.claude/settings.json       user-level (all your projects)<br>
-.claude/settings.local.json   local only (not committed)<br>
-```<br>
-<br>
-You configure them in .claude/settings.json in your project root. That file gets committed to git, so your whole team gets the same hooks automatically.<br>
-<br>
-Full documentation: https://code.claude.com/docs/en/hooks<br>
-<br>
-1. Auto-format every file Claude touches<br>
-<br>
-The problem: Claude writes correct code that breaks your formatting rules. You add &quot;always run Prettier&quot; to CLAUDE.md and it works most of the time, but not always.<br>
-<br>
-The hook: Prettier runs automatically after every file write or edit.<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PostToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Write|Edit&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;jq -r &#x27;.tool_input.file_path&#x27; | xargs npx prettier --write 2&gt;/dev/null; exit 0&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-<br>
-```<br>
-<br>
-Swap npx prettier --write for whatever formatter you use: black for Python, gofmt for Go, rustfmt for Rust. The pattern is the same.<br>
-<br>
-This was the first hook I set up and honestly it should be the default for every project. No more &quot;Claude forgot to format&quot; commits.<br>
-<br>
-2. Block dangerous commands<br>
-<br>
-The problem: Claude is powerful enough to run rm -rf, git reset --hard, DROP TABLE, or curl to random URLs. It probably won&#x27;t, but &quot;probably&quot; isn&#x27;t good enough when it&#x27;s your production database.<br>
-<br>
-The hook: Block destructive commands before they execute.<br>
-<br>
-Create .claude/hooks/block-dangerous.sh:<br>
-<br>
-```bash<br>
-Create .claude/hooks/block-dangerous.sh:<br>
-#!/usr/bin/env bash<br>
-set -euo pipefail<br>
-cmd=$(jq -r &#x27;.tool_input.command // &quot;&quot;&#x27;)<br>
-<br>
-dangerous_patterns=(<br>
-  &quot;rm -rf&quot;<br>
-  &quot;git reset --hard&quot;<br>
-  &quot;git push.*--force&quot;<br>
-  &quot;DROP TABLE&quot;<br>
-  &quot;DROP DATABASE&quot;<br>
-  &quot;curl.*|.*sh&quot;<br>
-  &quot;wget.*|.*bash&quot;<br>
-)<br>
-<br>
-for pattern in &quot;${dangerous_patterns[@]}&quot;; do<br>
-  if echo &quot;$cmd&quot; | grep -qiE &quot;$pattern&quot;; then<br>
-    echo &quot;Blocked: &#x27;$cmd&#x27; matches dangerous pattern &#x27;$pattern&#x27;. Propose a safer alternative.&quot; &gt;&amp;2<br>
-    exit 2<br>
-  fi<br>
-done<br>
-exit 0<br>
-Then add to your settings.json:<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Bash&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-Then add to your settings.json:<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Bash&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-<br>
-```<br>
-<br>
-Exit code 2 is the key. It blocks the action and sends your error message back to Claude so it can try a safer approach. Exit code 0 means &quot;go ahead.&quot; Anything else logs a warning but doesn&#x27;t block.<br>
-<br>
-3. Protect sensitive files from edits<br>
-<br>
-The problem: Claude can read and edit any file in your project. That includes .env, package-lock.json, config files, and anything else you&#x27;d rather it didn&#x27;t touch.<br>
-<br>
-The hook: Block edits to files that should be off-limits.<br>
-<br>
-Create .claude/hooks/protect-files.sh:<br>
-<br>
-```bash<br>
-#!/usr/bin/env bash<br>
-set -euo pipefail<br>
-file=$(jq -r &#x27;.tool_input.file_path // .tool_input.path // &quot;&quot;&#x27;)<br>
-<br>
-protected=(<br>
-  &quot;.env*&quot;<br>
-  &quot;.git/*&quot;<br>
-  &quot;package-lock.json&quot;<br>
-  &quot;yarn.lock&quot;<br>
-  &quot;*.pem&quot;<br>
-  &quot;*.key&quot;<br>
-  &quot;secrets/*&quot;<br>
-)<br>
-<br>
-for pattern in &quot;${protected[@]}&quot;; do<br>
-  if echo &quot;$file&quot; | grep -qiE &quot;^${pattern//\*/.*}$&quot;; then<br>
-    echo &quot;Blocked: &#x27;$file&#x27; is protected. Explain why this edit is necessary.&quot; &gt;&amp;2<br>
-    exit 2<br>
-  fi<br>
-done<br>
-exit 0<br>
-```<br>
-<br>
-```bash<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Edit|Write&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/protect-files.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-4. Run tests after every edit<br>
-<br>
-The problem: Claude makes a change, says &quot;done,&quot; and you discover the tests are broken 20 minutes later when you try to commit.<br>
-<br>
-The hook: Run your test suite automatically after every code change. If tests fail, Claude sees the failure and can fix it immediately.<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PostToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Write|Edit&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;npm run test --silent 2&gt;&amp;1 | tail -5; exit 0&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-The tail -5 keeps the output short so it doesn&#x27;t flood Claude&#x27;s context. You want Claude to see &quot;3 tests failed&quot; not the full 200-line test output.<br>
-<br>
-Boris Cherny, the creator of Claude Code, says giving Claude a feedback loop like this improves output quality by 2-3x. Instead of writing code and hoping it works, Claude writes code, sees the test results, and fixes failures on its own.<br>
-<br>
-5. Require passing tests before creating a PR<br>
-<br>
-The problem: Claude finishes a feature and immediately creates a PR. Tests are failing. Your reviewer sees red CI and sends it back.<br>
-<br>
-The hook: Block PR creation unless all tests pass.<br>
-<br>
-Create .claude/hooks/require-tests-for-pr.sh:<br>
-<br>
-```<br>
-#!/usr/bin/env bash<br>
-set -euo pipefail<br>
-<br>
-if npm run test --silent; then<br>
-  exit 0<br>
-else<br>
-  echo &quot;Tests are failing. Fix all test failures before creating a PR.&quot; &gt;&amp;2<br>
-  exit 2<br>
-fi<br>
-<br>
-```<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;mcp__github__create_pull_request&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/require-tests-for-pr.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-This is a hard gate. No green tests, no PR. Claude will fix the failures first because exit code 2 tells it the action was blocked and why.<br>
-<br>
-6. Auto-lint and report errors<br>
-<br>
-The problem: Claude writes code that works but violates your ESLint rules, style guide, or type checks. You catch it during review and send it back.<br>
-<br>
-The hook: Lint after every edit. If lint fails, Claude sees the errors and fixes them before you ever look at the code.<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PostToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Write|Edit&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;npx eslint --fix $(jq -r &#x27;.tool_input.file_path&#x27;) 2&gt;&amp;1 | tail -10; exit 0&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-You can chain this with the auto-format hook from #1. Prettier runs first, then ESLint. By the time you see the code, it&#x27;s formatted and lint-clean.<br>
-<br>
-7. Log every command Claude runs<br>
-<br>
-The problem: Claude runs a lot of shell commands during a session. If something goes wrong, you want to know exactly what it did and when.<br>
-<br>
-The hook: Append every Bash command to a log file with timestamps.<br>
-<br>
-Create .claude/hooks/log-commands.sh:<br>
-<br>
-```bash<br>
-#!/usr/bin/env bash<br>
-set -euo pipefail<br>
-cmd=$(jq -r &#x27;.tool_input.command // &quot;&quot;&#x27;)<br>
-printf &#x27;%s %s\n&#x27; &quot;$(date -Is)&quot; &quot;$cmd&quot; &gt;&gt; .claude/command-log.txt<br>
-exit 0<br>
-```<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Bash&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/log-commands.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-Now you have a timestamped audit trail of every command Claude ran. Add .claude/command-log.txt to your .gitignore so it doesn&#x27;t pollute your repo.<br>
-<br>
-This is especially useful for debugging: if Claude broke something three sessions ago, you can look at the log and find exactly when and what it ran.<br>
-<br>
-8. Auto-commit after each completed task<br>
-<br>
-The problem: Claude finishes a task and you forget to commit. Then it starts another task and now you have two unrelated changes mixed together in one commit.<br>
-<br>
-The hook: Automatically commit all changes when Claude stops working on a task.<br>
-<br>
-Create .claude/hooks/auto-commit.sh:<br>
-<br>
-```bash<br>
-#!/usr/bin/env bash<br>
-set -euo pipefail<br>
-git add -A<br>
-if ! git diff --cached --quiet; then<br>
-  git commit -m &quot;chore(ai): apply Claude edit&quot;<br>
-fi<br>
-exit 0<br>
-```<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;Stop&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          {<br>
-            &quot;type&quot;: &quot;command&quot;,<br>
-            &quot;command&quot;: &quot;.claude/hooks/auto-commit.sh&quot;<br>
-          }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-```<br>
-<br>
-Every time Claude finishes a response, changes get committed automatically. Your git history stays clean with atomic commits per task instead of one massive &quot;Claude changes&quot; blob at the end of the day.<br>
-<br>
-Combine this with claude -w feature-branch (worktrees) and you get isolated, auto-committed feature branches for every task.<br>
-<br>
-The complete settings.json<br>
-<br>
-Here&#x27;s everything combined into one file you can copy-paste:<br>
-<br>
-Screenshot-friendly:<br>
-<br>
-Copy this file into .claude/settings.json, create the hook scripts in .claude/hooks/, make them executable with chmod +x .claude/hooks/*.sh, and commit everything to git. Your whole team gets the same safety nets automatically.<br>
-<br>
-```json<br>
-{<br>
-  &quot;hooks&quot;: {<br>
-    &quot;PreToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Bash&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot; },<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/log-commands.sh&quot; }<br>
-        ]<br>
-      },<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Edit|Write&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/protect-files.sh&quot; }<br>
-        ]<br>
-      },<br>
-      {<br>
-        &quot;matcher&quot;: &quot;mcp__github__create_pull_request&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/require-tests-for-pr.sh&quot; }<br>
-        ]<br>
-      }<br>
-    ],<br>
-    &quot;PostToolUse&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;Write|Edit&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;jq -r &#x27;.tool_input.file_path&#x27; | xargs npx prettier --write 2&gt;/dev/null; exit 0&quot; },<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;npx eslint --fix $(jq -r &#x27;.tool_input.file_path&#x27;) 2&gt;&amp;1 | tail -10; exit 0&quot; }<br>
-        ]<br>
-      }<br>
-    ],<br>
-    &quot;Stop&quot;: [<br>
-      {<br>
-        &quot;matcher&quot;: &quot;&quot;,<br>
-        &quot;hooks&quot;: [<br>
-          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/auto-commit.sh&quot; }<br>
-        ]<br>
-      }<br>
-    ]<br>
-  }<br>
-}<br>
-<br>
-```<br>
-<br>
-The difference between a good Claude Code setup and a great one isn&#x27;t the model or the prompts. It&#x27;s the hooks.<br>
-<br>
-They&#x27;re the part that runs when you&#x27;re not paying attention, catching the mistakes you&#x27;d otherwise find during code review or worse, in production.<br>
-<br>
-Set up hook #1 (auto-format) and #2 (block dangerous commands) today. That alone will save you from the most common Claude Code mistakes. Add the rest as you need them.<br>
-<br>
-I share daily notes on AI, finance, and vibe coding in my Telegram channel: https://t.me/zodchixquant<br>
-<br>
-Thanks for reading 🙏🏼</div>
+You said run tests before finishing - It forgot.</p>
+<p>Have you ever told Claude Code to do something and it just didn&#x27;t?</p>
+<p>You said format the code - It didn&#x27;t. You said don&#x27;t touch that file - It did.</p>
+<p>You said run tests before finishing - It forgot.</p>
+<p>That&#x27;s because CLAUDE.md is a suggestion.</p>
+<p>Claude reads it and follows it about 80% of the time. Hooks are different. They&#x27;re automatic actions that fire every time Claude edits a file, runs a command, or finishes a task.</p>
+<p>Below I will share 8 personal hooks you can copy straight into your settings.json and never think about again 👇</p>
+<p>Before we dive in, I share daily notes on AI &amp; vibe coding in my Telegram channel: https://t.me/zodchixquant🧠</p>
+<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-01.jpg" alt=""></p>
+<p>How hooks work (30-second version) What are hooks?</p>
+<p>Hooks are automatic actions that run every time Claude Code does something, like editing a file or running a command.</p>
+<p>You set them up once and they work in the background without you thinking about it.</p>
+<p>The two you&#x27;ll use most:</p>
+<p>PreToolUse runs before Claude does something. You can inspect the action and block it by returning exit code 2. Think of it as a bouncer.</p>
+<p>PostToolUse runs after Claude does something. You can run cleanup, formatting, tests, or logging. Think of it as quality control on the assembly line.</p>
+<pre><code>Where hooks live:
+
+.claude/settings.json         project-level (shared via git)
+~/.claude/settings.json       user-level (all your projects)
+.claude/settings.local.json   local only (not committed)</code></pre>
+<p>You configure them in .claude/settings.json in your project root. That file gets committed to git, so your whole team gets the same hooks automatically.</p>
+<p>Full documentation: https://code.claude.com/docs/en/hooks</p>
+<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-02.jpg" alt=""></p>
+<p>1. Auto-format every file Claude touches</p>
+<p>The problem: Claude writes correct code that breaks your formatting rules. You add &quot;always run Prettier&quot; to CLAUDE.md and it works most of the time, but not always.</p>
+<p>The hook: Prettier runs automatically after every file write or edit.</p>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;jq -r &#x27;.tool_input.file_path&#x27; | xargs npx prettier --write 2&gt;/dev/null; exit 0&quot;
+          }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<p>Swap npx prettier --write for whatever formatter you use: black for Python, gofmt for Go, rustfmt for Rust. The pattern is the same.</p>
+<p>This was the first hook I set up and honestly it should be the default for every project. No more &quot;Claude forgot to format&quot; commits.</p>
+<p>2. Block dangerous commands</p>
+<p>The problem: Claude is powerful enough to run rm -rf, git reset --hard, DROP TABLE, or curl to random URLs. It probably won&#x27;t, but &quot;probably&quot; isn&#x27;t good enough when it&#x27;s your production database.</p>
+<p>The hook: Block destructive commands before they execute.</p>
+<p>Create .claude/hooks/block-dangerous.sh:</p>
+<pre><code>Create .claude/hooks/block-dangerous.sh:
+#!/usr/bin/env bash
+set -euo pipefail
+cmd=$(jq -r &#x27;.tool_input.command // &quot;&quot;&#x27;)
+
+dangerous_patterns=(
+  &quot;rm -rf&quot;
+  &quot;git reset --hard&quot;
+  &quot;git push.*--force&quot;
+  &quot;DROP TABLE&quot;
+  &quot;DROP DATABASE&quot;
+  &quot;curl.*|.*sh&quot;
+  &quot;wget.*|.*bash&quot;
+)
+
+for pattern in &quot;${dangerous_patterns[@]}&quot;; do
+  if echo &quot;$cmd&quot; | grep -qiE &quot;$pattern&quot;; then
+    echo &quot;Blocked: &#x27;$cmd&#x27; matches dangerous pattern &#x27;$pattern&#x27;. Propose a safer alternative.&quot; &gt;&amp;2
+    exit 2
+  fi
+done
+exit 0
+Then add to your settings.json:
+{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>Then add to your settings.json:</p>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<p>Exit code 2 is the key. It blocks the action and sends your error message back to Claude so it can try a safer approach. Exit code 0 means &quot;go ahead.&quot; Anything else logs a warning but doesn&#x27;t block.</p>
+<p>3. Protect sensitive files from edits</p>
+<p>The problem: Claude can read and edit any file in your project. That includes .env, package-lock.json, config files, and anything else you&#x27;d rather it didn&#x27;t touch.</p>
+<p>The hook: Block edits to files that should be off-limits.</p>
+<p>Create .claude/hooks/protect-files.sh:</p>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+file=$(jq -r &#x27;.tool_input.file_path // .tool_input.path // &quot;&quot;&#x27;)
+
+protected=(
+  &quot;.env*&quot;
+  &quot;.git/*&quot;
+  &quot;package-lock.json&quot;
+  &quot;yarn.lock&quot;
+  &quot;*.pem&quot;
+  &quot;*.key&quot;
+  &quot;secrets/*&quot;
+)
+
+for pattern in &quot;${protected[@]}&quot;; do
+  if echo &quot;$file&quot; | grep -qiE &quot;^${pattern//\*/.*}$&quot;; then
+    echo &quot;Blocked: &#x27;$file&#x27; is protected. Explain why this edit is necessary.&quot; &gt;&amp;2
+    exit 2
+  fi
+done
+exit 0</code></pre>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/protect-files.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>4. Run tests after every edit</p>
+<p>The problem: Claude makes a change, says &quot;done,&quot; and you discover the tests are broken 20 minutes later when you try to commit.</p>
+<p>The hook: Run your test suite automatically after every code change. If tests fail, Claude sees the failure and can fix it immediately.</p>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;npm run test --silent 2&gt;&amp;1 | tail -5; exit 0&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>The tail -5 keeps the output short so it doesn&#x27;t flood Claude&#x27;s context. You want Claude to see &quot;3 tests failed&quot; not the full 200-line test output.</p>
+<p>Boris Cherny, the creator of Claude Code, says giving Claude a feedback loop like this improves output quality by 2-3x. Instead of writing code and hoping it works, Claude writes code, sees the test results, and fixes failures on its own.</p>
+<p>5. Require passing tests before creating a PR</p>
+<p>The problem: Claude finishes a feature and immediately creates a PR. Tests are failing. Your reviewer sees red CI and sends it back.</p>
+<p>The hook: Block PR creation unless all tests pass.</p>
+<p>Create .claude/hooks/require-tests-for-pr.sh:</p>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+
+if npm run test --silent; then
+  exit 0
+else
+  echo &quot;Tests are failing. Fix all test failures before creating a PR.&quot; &gt;&amp;2
+  exit 2
+fi
+</code></pre>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;mcp__github__create_pull_request&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/require-tests-for-pr.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>This is a hard gate. No green tests, no PR. Claude will fix the failures first because exit code 2 tells it the action was blocked and why.</p>
+<p>6. Auto-lint and report errors</p>
+<p>The problem: Claude writes code that works but violates your ESLint rules, style guide, or type checks. You catch it during review and send it back.</p>
+<p>The hook: Lint after every edit. If lint fails, Claude sees the errors and fixes them before you ever look at the code.</p>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;npx eslint --fix $(jq -r &#x27;.tool_input.file_path&#x27;) 2&gt;&amp;1 | tail -10; exit 0&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>You can chain this with the auto-format hook from #1. Prettier runs first, then ESLint. By the time you see the code, it&#x27;s formatted and lint-clean.</p>
+<p>7. Log every command Claude runs</p>
+<p>The problem: Claude runs a lot of shell commands during a session. If something goes wrong, you want to know exactly what it did and when.</p>
+<p>The hook: Append every Bash command to a log file with timestamps.</p>
+<p>Create .claude/hooks/log-commands.sh:</p>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+cmd=$(jq -r &#x27;.tool_input.command // &quot;&quot;&#x27;)
+printf &#x27;%s %s\n&#x27; &quot;$(date -Is)&quot; &quot;$cmd&quot; &gt;&gt; .claude/command-log.txt
+exit 0</code></pre>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/log-commands.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>Now you have a timestamped audit trail of every command Claude ran. Add .claude/command-log.txt to your .gitignore so it doesn&#x27;t pollute your repo.</p>
+<p>This is especially useful for debugging: if Claude broke something three sessions ago, you can look at the log and find exactly when and what it ran.</p>
+<p>8. Auto-commit after each completed task</p>
+<p>The problem: Claude finishes a task and you forget to commit. Then it starts another task and now you have two unrelated changes mixed together in one commit.</p>
+<p>The hook: Automatically commit all changes when Claude stops working on a task.</p>
+<p>Create .claude/hooks/auto-commit.sh:</p>
+<pre><code>#!/usr/bin/env bash
+set -euo pipefail
+git add -A
+if ! git diff --cached --quiet; then
+  git commit -m &quot;chore(ai): apply Claude edit&quot;
+fi
+exit 0</code></pre>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;Stop&quot;: [
+      {
+        &quot;matcher&quot;: &quot;&quot;,
+        &quot;hooks&quot;: [
+          {
+            &quot;type&quot;: &quot;command&quot;,
+            &quot;command&quot;: &quot;.claude/hooks/auto-commit.sh&quot;
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+<p>Every time Claude finishes a response, changes get committed automatically. Your git history stays clean with atomic commits per task instead of one massive &quot;Claude changes&quot; blob at the end of the day.</p>
+<p>Combine this with claude -w feature-branch (worktrees) and you get isolated, auto-committed feature branches for every task.</p>
+<p>The complete settings.json</p>
+<p>Here&#x27;s everything combined into one file you can copy-paste:</p>
+<p>Screenshot-friendly:</p>
+<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-03.jpg" alt=""></p>
+<p>Copy this file into .claude/settings.json, create the hook scripts in .claude/hooks/, make them executable with chmod +x .claude/hooks/*.sh, and commit everything to git. Your whole team gets the same safety nets automatically.</p>
+<pre><code>{
+  &quot;hooks&quot;: {
+    &quot;PreToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Bash&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/block-dangerous.sh&quot; },
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/log-commands.sh&quot; }
+        ]
+      },
+      {
+        &quot;matcher&quot;: &quot;Edit|Write&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/protect-files.sh&quot; }
+        ]
+      },
+      {
+        &quot;matcher&quot;: &quot;mcp__github__create_pull_request&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/require-tests-for-pr.sh&quot; }
+        ]
+      }
+    ],
+    &quot;PostToolUse&quot;: [
+      {
+        &quot;matcher&quot;: &quot;Write|Edit&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;jq -r &#x27;.tool_input.file_path&#x27; | xargs npx prettier --write 2&gt;/dev/null; exit 0&quot; },
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;npx eslint --fix $(jq -r &#x27;.tool_input.file_path&#x27;) 2&gt;&amp;1 | tail -10; exit 0&quot; }
+        ]
+      }
+    ],
+    &quot;Stop&quot;: [
+      {
+        &quot;matcher&quot;: &quot;&quot;,
+        &quot;hooks&quot;: [
+          { &quot;type&quot;: &quot;command&quot;, &quot;command&quot;: &quot;.claude/hooks/auto-commit.sh&quot; }
+        ]
+      }
+    ]
+  }
+}
+</code></pre>
+<p>The difference between a good Claude Code setup and a great one isn&#x27;t the model or the prompts. It&#x27;s the hooks.</p>
+<p>They&#x27;re the part that runs when you&#x27;re not paying attention, catching the mistakes you&#x27;d otherwise find during code review or worse, in production.</p>
+<p>Set up hook #1 (auto-format) and #2 (block dangerous commands) today. That alone will save you from the most common Claude Code mistakes. Add the rest as you need them.</p>
+<p>I share daily notes on AI, finance, and vibe coding in my Telegram channel: https://t.me/zodchixquant</p>
+<p>Thanks for reading 🙏🏼</p>
+<p><img src="../../content/2026-04/x-2040000216456143002-zodchiii/assets/image-04.jpg" alt=""></p></div>
 </body>
 </html>
