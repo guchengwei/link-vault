@@ -30,8 +30,15 @@ def resolve_xfetch_cmd() -> str:
     found = shutil.which("xfetch")
     if found:
         return found
+    probe = subprocess.run(
+        ["python3", "-m", "xfetch", "--help"],
+        capture_output=True,
+        text=True,
+    )
+    if probe.returncode == 0:
+        return "python3 -m xfetch"
     raise XFetchError(
-        "xfetch CLI not found. Set XFETCH_CMD or LINKVAULT_XFETCH_CMD, or install xfetch."
+        "xfetch CLI not found. Set XFETCH_CMD or LINKVAULT_XFETCH_CMD, install xfetch, or ensure python3 -m xfetch works."
     )
 
 
