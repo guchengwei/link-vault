@@ -9,6 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from .site_index import build_homepage_index
 from .vectordb import infer_source_type
 
 
@@ -69,6 +70,14 @@ def ingest_url(url: str, content_root: Optional[str] = None) -> Dict[str, Any]:
     return payload
 
 
+def _refresh_target_repo_homepage(target_repo: str) -> Optional[str]:
+    repo_path = Path(target_repo).expanduser()
+    if not repo_path.exists() or not repo_path.is_dir():
+        return None
+    output_path = build_homepage_index(content_dir=repo_path / "content", site_dir=repo_path / "site")
+    return str(output_path)
+
+
 def publish_bundle(bundle_path: str) -> Dict[str, Any]:
     target_repo = os.environ.get("XFETCH_TARGET_REPO") or os.environ.get("LINKVAULT_XFETCH_TARGET_REPO")
     repo_owner = os.environ.get("XFETCH_REPO_OWNER") or os.environ.get("LINKVAULT_XFETCH_REPO_OWNER")
@@ -85,7 +94,11 @@ def publish_bundle(bundle_path: str) -> Dict[str, Any]:
         "--repo-name", repo_name,
         "--json",
     ]
-    return _run_json(cmd)
+    payload = _run_json(cmd)
+    homepage_index = _refresh_target_repo_homepage(target_repo)
+    if homepage_index:
+        payload.setdefault("homepage_index", homepage_index)
+    return payload
 
 
 def load_bundle(bundle_path: str) -> Dict[str, Any]:
