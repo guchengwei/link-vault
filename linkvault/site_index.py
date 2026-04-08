@@ -5,10 +5,25 @@ import json
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from html import escape
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import urlparse
+
+
+def _parse_created_at(value: str) -> datetime | None:
+    if not value:
+        return None
+    normalized = value.replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        pass
+    try:
+        return parsedate_to_datetime(value)
+    except (TypeError, ValueError, IndexError, OverflowError):
+        return None
 
 
 @dataclass
@@ -23,16 +38,25 @@ class PublishedItem:
 
     @property
     def month_key(self) -> str:
-        if self.created_at:
+        parsed = _parse_created_at(self.created_at)
+        if parsed:
+            return parsed.strftime("%Y-%m")
+        if self.created_at and len(self.created_at) >= 7 and self.created_at[4] == "-":
             return self.created_at[:7]
         parts = Path(self.bundle_path).parts
-        if len(parts) >= 2 and len(parts[1]) == 7:
-            return parts[1]
+        for part in parts:
+            if len(part) == 7 and part[4] == "-":
+                return part
         return "unknown"
 
     @property
     def created_date(self) -> str:
-        return self.created_at[:10] if self.created_at else "unknown"
+        parsed = _parse_created_at(self.created_at)
+        if parsed:
+            return parsed.strftime("%Y-%m-%d")
+        if self.created_at and len(self.created_at) >= 10 and self.created_at[4] == "-":
+            return self.created_at[:10]
+        return "unknown"
 
 
 def _load_json(path: Path) -> dict:
@@ -79,11 +103,10 @@ def _author_label(document: dict) -> str:
 def _created_sort_key(value: str) -> tuple[int, str]:
     if not value:
         return (0, "")
-    normalized = value.replace("Z", "+00:00")
-    try:
-        return (1, datetime.fromisoformat(normalized).isoformat())
-    except ValueError:
-        return (1, value)
+    parsed = _parse_created_at(value)
+    if parsed:
+        return (1, parsed.isoformat())
+    return (1, value)
 
 
 def _month_sort_key(value: str) -> tuple[int, str]:

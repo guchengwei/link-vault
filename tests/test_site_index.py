@@ -140,3 +140,23 @@ def test_build_homepage_index_includes_legacy_markdown_items(tmp_path):
     assert "https://guchengwei.github.io/link-vault/d/web-327c3fda87ce-example-com/" in html
     assert "2026-03-08" in html
     assert "1 item · web: 1" in html
+
+
+def test_build_homepage_index_normalizes_legacy_tweet_dates(tmp_path):
+    from linkvault.site_index import build_homepage_index
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+    legacy_dir = content_dir / "tweets" / "2026-03"
+    legacy_dir.mkdir(parents=True)
+    (legacy_dir / "i-2033437609460891883.md").write_text(
+        "---\nurl: \"https://x.com/i/status/2033437609460891883\"\nsource_type: tweet\ntitle: \"@dotey\"\nauthor: \"宝玉\"\ncreated_at: \"Mon Mar 16 06:58:00 +0000 2026\"\n---\n\n# @dotey\n\nLegacy tweet body.\n",
+        encoding="utf-8",
+    )
+
+    html = build_homepage_index(content_dir=content_dir, site_dir=site_dir).read_text(encoding="utf-8")
+
+    assert "2026-03-16" in html
+    assert 'class="section-title">2026-03' in html
+    assert "Latest capture: <strong>2026-03-16</strong>" in html
+    assert "Mon Mar" not in html
