@@ -120,3 +120,23 @@ def test_render_homepage_index_groups_by_month_and_shows_counts(tmp_path):
     assert 'class="section-title">2026-03' in html
     assert "2 items · x: 1 · web: 1" in html
     assert "1 item · x: 1" in html
+
+
+def test_build_homepage_index_includes_legacy_markdown_items(tmp_path):
+    from linkvault.site_index import build_homepage_index
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+    legacy_dir = content_dir / "web" / "2026-03"
+    legacy_dir.mkdir(parents=True)
+    (legacy_dir / "example-com-example-domain.md").write_text(
+        "---\nurl: \"https://example.com\"\nsource_type: webpage\ntitle: \"Example Domain\"\nfetched_at: \"2026-03-08T01:51:26.315113Z\"\n---\n\n# Example Domain\n\nHello from legacy markdown.\n",
+        encoding="utf-8",
+    )
+
+    html = build_homepage_index(content_dir=content_dir, site_dir=site_dir).read_text(encoding="utf-8")
+
+    assert "Example Domain" in html
+    assert "https://guchengwei.github.io/link-vault/d/web-327c3fda87ce-example-com/" in html
+    assert "2026-03-08" in html
+    assert "1 item · web: 1" in html

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from collections import Counter
 from dataclasses import dataclass
@@ -7,6 +8,7 @@ from datetime import datetime
 from html import escape
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import urlparse
 
 
 @dataclass
@@ -35,6 +37,35 @@ class PublishedItem:
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _parse_legacy_markdown(path: Path) -> tuple[dict, str] | None:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return None
+    try:
+        _, frontmatter, markdown = text.split("---\n", 2)
+    except ValueError:
+        return None
+
+    metadata: dict[str, str] = {}
+    for line in frontmatter.splitlines():
+        if not line.strip() or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        metadata[key.strip()] = value.strip().strip('"')
+    return metadata, markdown.strip()
+
+
+def _legacy_public_url(markdown_path: Path, metadata: dict) -> str:
+    url = metadata.get("url") or metadata.get("final_url") or ""
+    parsed = urlparse(url)
+    host = (parsed.netloc or "unknown").replace(".", "-")
+    digest = hashlib.sha1(url.encode("utf-8")).hexdigest()[:12] if url else hashlib.sha1(str(markdown_path).encode("utf-8")).hexdigest()[:12]
+    source_type = (metadata.get("source_type") or markdown_path.parts[1] if len(markdown_path.parts) > 1 else "web").strip().lower()
+    prefix = {"webpage": "web", "tweet": "tweets", "article": "web"}.get(source_type, source_type)
+    slug = f"{prefix}-{digest}-{host}"
+    return f"https://guchengwei.github.io/link-vault/d/{slug}/"
 
 
 def _author_label(document: dict) -> str:
@@ -95,6 +126,7 @@ def _render_item(item: PublishedItem) -> str:
 def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
     content_path = Path(content_dir)
     items: list[PublishedItem] = []
+    seen_public_urls: set[str] = set()
 
     for publish_path in content_path.glob("**/publish.json"):
         publish = _load_json(publish_path)
@@ -105,11 +137,12 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
         if not document_path.exists():
             continue
         document = _load_json(document_path)
+        public_url = publish.get("public_url") or ""
 
         items.append(
             PublishedItem(
-                title=document.get("title") or document.get("source_url") or publish.get("public_url") or publish_path.parent.name,
-                public_url=publish.get("public_url") or "",
+                title=document.get("title") or document.get("source_url") or public_url or publish_path.parent.name,
+                public_url=public_url,
                 source_url=document.get("source_url") or document.get("canonical_url") or "",
                 source_type=document.get("source_type") or "unknown",
                 author_label=_author_label(document),
@@ -117,6 +150,31 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
                 bundle_path=publish.get("target", {}).get("bundle_path") or str(publish_path.parent.relative_to(content_path)),
             )
         )
+        if public_url:
+            seen_public_urls.add(public_url)
+
+    for markdown_path in content_path.glob("**/*.md"):
+        if markdown_path.name == "index.md":
+            continue
+        legacy = _parse_legacy_markdown(markdown_path)
+        if not legacy:
+            continue
+        metadata, _markdown = legacy
+        public_url = _legacy_public_url(markdown_path, metadata)
+        if public_url in seen_public_urls:
+            continue
+        items.append(
+            PublishedItem(
+                title=metadata.get("title") or metadata.get("url") or markdown_path.stem,
+                public_url=public_url,
+                source_url=metadata.get("url") or metadata.get("final_url") or "",
+                source_type={"webpage": "web", "tweet": "tweets", "article": "web"}.get((metadata.get("source_type") or "web").strip().lower(), (metadata.get("source_type") or "web").strip().lower()),
+                author_label=(metadata.get("author") or "").strip(),
+                created_at=metadata.get("created_at") or metadata.get("fetched_at") or "",
+                bundle_path=str(markdown_path.relative_to(content_path)),
+            )
+        )
+        seen_public_urls.add(public_url)
 
     items.sort(key=lambda item: (_created_sort_key(item.created_at), item.title.casefold()), reverse=True)
     return items
