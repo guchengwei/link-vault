@@ -1,5 +1,5 @@
 """
-SQLite vector database — chunking, embedding, storage, and search.
+SQLite vector database, chunking, embedding, storage, and search.
 
 Stores embeddings as raw float32 blobs in SQLite. Uses cosine similarity
 via numpy for search (no extension required).
@@ -11,16 +11,9 @@ import json
 import os
 import re
 import sqlite3
-import struct
-import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-
-# ---------------------------------------------------------------------------
-# Embedding model (lazy-loaded singleton)
-# ---------------------------------------------------------------------------
 
 _model = None
 _tokenizer = None
@@ -40,38 +33,28 @@ def _load_model():
 
 
 def embed_texts(texts: List[str]) -> np.ndarray:
-    """Embed a list of texts. Returns (N, 384) float32 array."""
     _load_model()
     import torch
 
-    # Batch encode
     encoded = _tokenizer(
         texts, padding=True, truncation=True, max_length=512, return_tensors="pt"
     )
     with torch.no_grad():
         output = _model(**encoded)
-    # Mean pooling over token embeddings (mask-aware)
     mask = encoded["attention_mask"].unsqueeze(-1).float()
     embeddings = (output.last_hidden_state * mask).sum(1) / mask.sum(1)
-    # L2 normalize
     embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
     return embeddings.cpu().numpy().astype(np.float32)
 
 
 def embed_text(text: str) -> np.ndarray:
-    """Embed a single text. Returns (384,) float32 array."""
     return embed_texts([text])[0]
 
-# ---------------------------------------------------------------------------
-# Chunking
-# ---------------------------------------------------------------------------
 
 def chunk_text(text: str, max_chars: int = 800, overlap: int = 100) -> List[str]:
-    """Split text into overlapping chunks at paragraph/sentence boundaries."""
     if not text or len(text) <= max_chars:
         return [text] if text else []
 
-    # Split on double newlines (paragraphs)
     paragraphs = re.split(r"\n\n+", text)
     chunks = []
     current = ""
@@ -82,7 +65,6 @@ def chunk_text(text: str, max_chars: int = 800, overlap: int = 100) -> List[str]
         else:
             if current:
                 chunks.append(current.strip())
-            # If a single paragraph exceeds max_chars, split on sentences
             if len(para) > max_chars:
                 sentences = re.split(r"(?<=[.!?])\s+", para)
                 current = ""
@@ -99,7 +81,6 @@ def chunk_text(text: str, max_chars: int = 800, overlap: int = 100) -> List[str]
     if current.strip():
         chunks.append(current.strip())
 
-    # Add overlap: prepend last `overlap` chars of previous chunk
     if overlap > 0 and len(chunks) > 1:
         overlapped = [chunks[0]]
         for i in range(1, len(chunks)):
@@ -109,9 +90,6 @@ def chunk_text(text: str, max_chars: int = 800, overlap: int = 100) -> List[str]
 
     return chunks
 
-# ---------------------------------------------------------------------------
-# SQLite blob helpers
-# ---------------------------------------------------------------------------
 
 def _vec_to_blob(vec: np.ndarray) -> bytes:
     return vec.astype(np.float32).tobytes()
@@ -120,9 +98,6 @@ def _vec_to_blob(vec: np.ndarray) -> bytes:
 def _blob_to_vec(blob: bytes) -> np.ndarray:
     return np.frombuffer(blob, dtype=np.float32)
 
-# ---------------------------------------------------------------------------
-# Database
-# ---------------------------------------------------------------------------
 
 DB_SCHEMA = """
 CREATE TABLE IF NOT EXISTS documents (
@@ -134,6 +109,11 @@ CREATE TABLE IF NOT EXISTS documents (
     full_text TEXT,
     metadata_json TEXT,
     md_path TEXT,
+    bundle_path TEXT,
+    index_path TEXT,
+    public_url TEXT,
+    publish_status TEXT,
+    publish_error TEXT,
     created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -156,7 +136,23 @@ class VectorDB:
         self.db_path = db_path
         self.conn = sqlite3.connect(db_path)
         self.conn.executescript(DB_SCHEMA)
+        self._migrate_schema()
         self.conn.commit()
+
+    def _migrate_schema(self):
+        cur = self.conn.cursor()
+        cur.execute("PRAGMA table_info(documents)")
+        existing = {row[1] for row in cur.fetchall()}
+        additions = {
+            "bundle_path": "ALTER TABLE documents ADD COLUMN bundle_path TEXT",
+            "index_path": "ALTER TABLE documents ADD COLUMN index_path TEXT",
+            "public_url": "ALTER TABLE documents ADD COLUMN public_url TEXT",
+            "publish_status": "ALTER TABLE documents ADD COLUMN publish_status TEXT",
+            "publish_error": "ALTER TABLE documents ADD COLUMN publish_error TEXT",
+        }
+        for col, sql in additions.items():
+            if col not in existing:
+                cur.execute(sql)
 
     def close(self):
         self.conn.close()
@@ -170,31 +166,41 @@ class VectorDB:
         text: str,
         metadata: dict,
         md_path: str = "",
+        bundle_path: str = "",
+        index_path: str = "",
+        public_url: str = "",
+        publish_status: str = "",
+        publish_error: str = "",
     ) -> int:
-        """Ingest a document: chunk, embed, and store. Returns doc_id."""
         cur = self.conn.cursor()
-
-        # Upsert document
-        cur.execute(
-            "SELECT id FROM documents WHERE url = ?", (url,)
-        )
+        cur.execute("SELECT id FROM documents WHERE url = ?", (url,))
         row = cur.fetchone()
+        values = (
+            title,
+            author,
+            text,
+            json.dumps(metadata, ensure_ascii=False),
+            md_path,
+            bundle_path,
+            index_path,
+            public_url,
+            publish_status,
+            publish_error,
+        )
         if row:
             doc_id = row[0]
             cur.execute(
-                "UPDATE documents SET title=?, author=?, full_text=?, metadata_json=?, md_path=? WHERE id=?",
-                (title, author, text, json.dumps(metadata, ensure_ascii=False), md_path, doc_id),
+                "UPDATE documents SET title=?, author=?, full_text=?, metadata_json=?, md_path=?, bundle_path=?, index_path=?, public_url=?, publish_status=?, publish_error=? WHERE id=?",
+                values + (doc_id,),
             )
             cur.execute("DELETE FROM chunks WHERE doc_id = ?", (doc_id,))
         else:
             cur.execute(
-                "INSERT INTO documents (url, source_type, title, author, full_text, metadata_json, md_path) VALUES (?,?,?,?,?,?,?)",
-                (url, source_type, title, author, text,
-                 json.dumps(metadata, ensure_ascii=False), md_path),
+                "INSERT INTO documents (url, source_type, title, author, full_text, metadata_json, md_path, bundle_path, index_path, public_url, publish_status, publish_error) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (url, source_type) + values,
             )
             doc_id = cur.lastrowid
 
-        # Chunk and embed
         chunks = chunk_text(text)
         if not chunks:
             self.conn.commit()
@@ -211,21 +217,16 @@ class VectorDB:
         return doc_id
 
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        """Search for chunks most similar to the query. Returns ranked results."""
         q_emb = embed_text(query)
-
         cur = self.conn.cursor()
         cur.execute(
-            "SELECT c.id, c.doc_id, c.chunk_index, c.text, c.embedding, "
-            "d.url, d.title, d.source_type, d.author "
+            "SELECT c.id, c.doc_id, c.chunk_index, c.text, c.embedding, d.url, d.title, d.source_type, d.author, d.public_url, d.publish_status "
             "FROM chunks c JOIN documents d ON c.doc_id = d.id"
         )
-
         scored = []
         for row in cur.fetchall():
-            chunk_id, doc_id, chunk_idx, text, emb_blob, url, title, stype, author = row
+            chunk_id, doc_id, chunk_idx, text, emb_blob, url, title, stype, author, public_url, publish_status = row
             emb = _blob_to_vec(emb_blob)
-            # Cosine similarity (vectors are already L2-normalized)
             score = float(np.dot(q_emb, emb))
             scored.append({
                 "score": round(score, 4),
@@ -234,31 +235,32 @@ class VectorDB:
                 "title": title,
                 "source_type": stype,
                 "author": author,
+                "public_url": public_url,
+                "publish_status": publish_status,
                 "doc_id": doc_id,
                 "chunk_index": chunk_idx,
             })
-
         scored.sort(key=lambda x: x["score"], reverse=True)
         return scored[:top_k]
 
     def list_documents(self) -> List[Dict[str, Any]]:
-        """List all ingested documents."""
         cur = self.conn.cursor()
         cur.execute(
-            "SELECT id, url, source_type, title, author, md_path, created_at FROM documents ORDER BY created_at DESC"
+            "SELECT id, url, source_type, title, author, md_path, bundle_path, index_path, public_url, publish_status, created_at FROM documents ORDER BY created_at DESC"
         )
         return [
-            {"id": r[0], "url": r[1], "source_type": r[2], "title": r[3],
-             "author": r[4], "md_path": r[5], "created_at": r[6]}
+            {
+                "id": r[0], "url": r[1], "source_type": r[2], "title": r[3],
+                "author": r[4], "md_path": r[5], "bundle_path": r[6], "index_path": r[7],
+                "public_url": r[8], "publish_status": r[9], "created_at": r[10]
+            }
             for r in cur.fetchall()
         ]
 
     def get_document_by_url(self, url: str) -> Optional[Dict[str, Any]]:
-        """Get a single document by URL. Returns dict or None."""
         cur = self.conn.cursor()
         cur.execute(
-            "SELECT id, url, source_type, title, author, full_text, "
-            "metadata_json, md_path, created_at FROM documents WHERE url = ?",
+            "SELECT id, url, source_type, title, author, full_text, metadata_json, md_path, bundle_path, index_path, public_url, publish_status, publish_error, created_at FROM documents WHERE url = ?",
             (url,),
         )
         row = cur.fetchone()
@@ -268,7 +270,9 @@ class VectorDB:
             "id": row[0], "url": row[1], "source_type": row[2],
             "title": row[3], "author": row[4], "full_text": row[5],
             "metadata": json.loads(row[6]) if row[6] else {},
-            "md_path": row[7], "created_at": row[8],
+            "md_path": row[7], "bundle_path": row[8], "index_path": row[9],
+            "public_url": row[10], "publish_status": row[11], "publish_error": row[12],
+            "created_at": row[13],
         }
 
     def stats(self) -> Dict[str, Any]:
