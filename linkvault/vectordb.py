@@ -99,6 +99,21 @@ def _blob_to_vec(blob: bytes) -> np.ndarray:
     return np.frombuffer(blob, dtype=np.float32)
 
 
+def infer_source_type(url: str) -> str:
+    url = (url or "").lower()
+    if "x.com/" in url or "twitter.com/" in url:
+        return "tweet"
+    if "youtube.com/" in url or "youtu.be/" in url:
+        return "youtube"
+    if "bilibili.com/" in url:
+        return "bilibili"
+    if "reddit.com/" in url:
+        return "reddit"
+    if "t.me/" in url:
+        return "telegram"
+    return "webpage"
+
+
 DB_SCHEMA = """
 CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
