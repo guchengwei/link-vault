@@ -1,9 +1,9 @@
 __pycache__/
 *.pyc
 linkvault.db
-content/
 *.egg-info/
 .eggs/
 docs/
 logs/
+site/
 site-out/

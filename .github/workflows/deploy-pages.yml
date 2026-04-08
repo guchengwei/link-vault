@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'site/**'
+      - 'content/**'
+      - 'linkvault/site_builder.py'
+      - 'linkvault/site_index.py'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -26,6 +28,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Build static site from content bundles
+        run: python -m linkvault.site_builder
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

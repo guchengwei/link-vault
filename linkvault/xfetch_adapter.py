@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .site_index import build_homepage_index
+from .site_builder import build_site_from_content
 from .vectordb import infer_source_type
 
 
@@ -70,12 +70,15 @@ def ingest_url(url: str, content_root: Optional[str] = None) -> Dict[str, Any]:
     return payload
 
 
-def _refresh_target_repo_homepage(target_repo: str) -> Optional[str]:
+def _rebuild_target_repo_site(target_repo: str) -> Optional[str]:
     repo_path = Path(target_repo).expanduser()
     if not repo_path.exists() or not repo_path.is_dir():
         return None
-    output_path = build_homepage_index(content_dir=repo_path / "content", site_dir=repo_path / "site")
-    return str(output_path)
+    output_paths = build_site_from_content(content_dir=repo_path / "content", site_dir=repo_path / "site")
+    homepage = next((path for path in output_paths if path.name == "index.html" and path.parent == repo_path / "site"), None)
+    if homepage:
+        return str(homepage)
+    return str(output_paths[0]) if output_paths else None
 
 
 def publish_bundle(bundle_path: str) -> Dict[str, Any]:
@@ -95,9 +98,9 @@ def publish_bundle(bundle_path: str) -> Dict[str, Any]:
         "--json",
     ]
     payload = _run_json(cmd)
-    homepage_index = _refresh_target_repo_homepage(target_repo)
-    if homepage_index:
-        payload.setdefault("homepage_index", homepage_index)
+    site_build_root = _rebuild_target_repo_site(target_repo)
+    if site_build_root:
+        payload.setdefault("site_build_root", site_build_root)
     return payload
 
 
