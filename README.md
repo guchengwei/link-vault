@@ -90,6 +90,31 @@ The xfetch CLI must be available on PATH, or configured via one of:
 - `XFETCH_CMD`
 - `LINKVAULT_XFETCH_CMD`
 
+For publish to work end to end, configure:
+
+- `XFETCH_TARGET_REPO`
+- `XFETCH_REPO_OWNER`
+- `XFETCH_REPO_NAME`
+
+Example:
+
+```bash
+export XFETCH_CMD='python3 -m xfetch'
+export XFETCH_TARGET_REPO='/home/nvidia/.openclaw/workspace/link-vault-publish'
+export XFETCH_REPO_OWNER='guchengwei'
+export XFETCH_REPO_NAME='link-vault'
+```
+
+## Validation
+
+Validated with a real end-to-end run after installing xfetch locally:
+
+- local ingest through xfetch
+- local indexing of bundle `index.md`
+- real publish to `guchengwei/link-vault`
+- resulting public URL, for example:
+  - <https://guchengwei.github.io/link-vault/d/web-ef3f409f8927-example-com/>
+
 ## Notes
 
 - old fetch/storage pipeline components should be removed from active runtime use
