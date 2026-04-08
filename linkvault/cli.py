@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
 """
-link-vault CLI — ingest URLs and search stored content.
-
-Usage:
-  python -m linkvault ingest <url> [url2 ...]   Fetch, save, and index URLs
-  python -m linkvault search <query>             Semantic search across all content
-  python -m linkvault list                       List all ingested documents
-  python -m linkvault stats                      Show database stats
+link-vault CLI, ingest URLs and search stored xfetch bundle content.
 """
 
 import argparse
@@ -14,12 +8,10 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
-from .fetchers import fetch, fetch_batch, FetchResult, validate_fetch_result
-from .storage import save_result
 from .vectordb import VectorDB
+from .xfetch_adapter import XFetchError, ingest_url, load_bundle, publish_bundle
 
 DEFAULT_DB = "linkvault.db"
 DEFAULT_CONTENT_DIR = "content"
@@ -41,82 +33,116 @@ def _setup_log():
 _log = _setup_log()
 
 
+def _extract_doc_fields(ingest_payload: dict, bundle_payload: dict) -> dict:
+    document = bundle_payload.get("document") or {}
+    index_path = bundle_payload.get("index_path", "")
+    index_text = bundle_payload.get("index_text", "")
+    title = document.get("title") or ingest_payload.get("title") or ingest_payload.get("url")
+    author = document.get("author") or document.get("byline") or ingest_payload.get("author") or ""
+    source_type = document.get("source_type") or ingest_payload.get("source_type") or document.get("kind") or "webpage"
+    canonical_url = document.get("url") or ingest_payload.get("url")
+    return {
+        "url": canonical_url,
+        "title": title,
+        "author": author,
+        "source_type": source_type,
+        "text": index_text,
+        "metadata": document,
+        "index_path": index_path,
+    }
+
+
+def _ingest_one(url: str, db: VectorDB, content_dir: str) -> dict:
+    ingest_payload = ingest_url(url, content_root=content_dir)
+    bundle_path = ingest_payload.get("bundle_path") or ingest_payload.get("bundle") or ""
+    if not bundle_path:
+        raise XFetchError("xfetch ingest did not return bundle_path")
+
+    bundle_payload = load_bundle(bundle_path)
+    doc = _extract_doc_fields(ingest_payload, bundle_payload)
+
+    published = False
+    public_url = ""
+    publish_error = ""
+    publish_status = "not_attempted"
+    try:
+        publish_payload = publish_bundle(bundle_path)
+        published = bool(publish_payload.get("ok", True))
+        public_url = publish_payload.get("public_url") or publish_payload.get("url") or ""
+        publish_status = "published" if published else "failed"
+        publish_error = publish_payload.get("error") or ""
+    except XFetchError as exc:
+        publish_status = "failed"
+        publish_error = str(exc)
+
+    db.ingest(
+        url=doc["url"],
+        source_type=doc["source_type"],
+        title=doc["title"],
+        author=doc["author"],
+        text=doc["text"],
+        metadata=doc["metadata"],
+        md_path=doc["index_path"],
+        bundle_path=bundle_path,
+        index_path=doc["index_path"],
+        public_url=public_url,
+        publish_status=publish_status,
+        publish_error=publish_error,
+    )
+
+    return {
+        "ok": True,
+        "url": doc["url"],
+        "title": doc["title"],
+        "source_type": doc["source_type"],
+        "bundle_path": bundle_path,
+        "index_path": doc["index_path"],
+        "published": published,
+        "public_url": public_url,
+        "error": None,
+        "publish_error": publish_error or None,
+    }
+
+
 def cmd_ingest(args):
-    _log.info("ingest called | urls=%s | db=%s | content_dir=%s | cwd=%s",
-              args.urls, args.db, args.content_dir, os.getcwd())
+    _log.info("ingest called | urls=%s | db=%s | content_dir=%s | cwd=%s", args.urls, args.db, args.content_dir, os.getcwd())
     db = VectorDB(args.db)
-
-    # Build transcription config
-    transcribe_config = None
-    if not args.no_transcribe:
-        from .transcription import TranscriptionConfig
-        transcribe_config = TranscriptionConfig(model_size=args.whisper_model)
-
     results = []
     for url in args.urls:
-        print(f"Fetching: {url} ...", file=sys.stderr)
-        _log.info("fetching %s", url)
-        result = fetch(url, transcribe_config=transcribe_config)
-        if not result.ok:
-            _log.error("fetch failed | url=%s | error=%s", url, result.error)
-            print(f"  ERROR: {result.error}", file=sys.stderr)
-            results.append(result)
-            continue
-
-        original_url = url
-        resolved_url = result.metadata.get("resolved_url") if isinstance(result.metadata, dict) else None
-        final_url = result.metadata.get("final_url") if isinstance(result.metadata, dict) else None
-        _log.info("fetch ok | url=%s | resolved_url=%s | final_url=%s | type=%s | title=%s | text_len=%d",
-                   original_url, resolved_url, final_url, result.source_type, result.title, len(result.text or ""))
-
-        is_valid, rejection_reason = validate_fetch_result(result)
-        if not is_valid:
-            result.ok = False
-            result.error_code = "rejected_fetch_result"
-            result.error = f"Rejected fetch result: {rejection_reason}"
-            if isinstance(result.metadata, dict):
-                result.metadata.setdefault("error_code", result.error_code)
-            _log.error("fetch rejected | original=%s | resolved=%s | final_url=%s | reason=%s",
-                       original_url, resolved_url, final_url, rejection_reason)
-            print(f"  ERROR: {result.error}", file=sys.stderr)
-            results.append(result)
-            continue
-
-        # Save markdown
-        md_path = save_result(result, base_dir=args.content_dir)
-        _log.info("saved markdown | path=%s", md_path)
-        print(f"  Saved: {md_path}", file=sys.stderr)
-
-        # Index in vector DB
-        doc_id = db.ingest(
-            url=result.url,
-            source_type=result.source_type,
-            title=result.title,
-            author=result.author,
-            text=result.text,
-            metadata=result.metadata,
-            md_path=md_path or "",
-        )
-        _log.info("indexed | doc_id=%d | url=%s", doc_id, url)
-        print(f"  Indexed: doc_id={doc_id}", file=sys.stderr)
-        results.append(result)
-
+        print(f"Ingesting via xfetch: {url} ...", file=sys.stderr)
+        try:
+            results.append(_ingest_one(url, db, args.content_dir))
+        except XFetchError as exc:
+            results.append({
+                "ok": False,
+                "url": url,
+                "title": "",
+                "source_type": "",
+                "bundle_path": "",
+                "index_path": "",
+                "published": False,
+                "public_url": "",
+                "error": str(exc),
+                "publish_error": None,
+            })
     db.close()
 
     if args.json:
-        out = [r.to_dict() for r in results]
-        print(json.dumps(out, ensure_ascii=False, indent=2))
+        print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
         for r in results:
-            status = "OK" if r.ok else "FAIL"
-            print(f"[{status}] {r.source_type}: {r.url} — {r.title or r.error}")
+            if not r["ok"]:
+                print(f"Save failed: {r['url']} -> {r['error']}")
+            elif r["published"]:
+                print(f"Saved + published: {r['title']} -> {r['public_url']}")
+            else:
+                print(f"Saved locally, publish failed: {r['title']} -> {r['publish_error']}")
 
 
 def cmd_search(args):
     db = VectorDB(args.db)
     results = db.search(args.query, top_k=args.top_k)
     db.close()
-
     if args.json:
         print(json.dumps(results, ensure_ascii=False, indent=2))
     else:
@@ -127,6 +153,8 @@ def cmd_search(args):
             print(f"\n{'='*60}")
             print(f"#{i}  score={r['score']:.4f}  [{r['source_type']}]  {r['title']}")
             print(f"    URL: {r['url']}")
+            if r.get("public_url"):
+                print(f"    Public: {r['public_url']}")
             print(f"    {r['chunk_text'][:300]}")
 
 
@@ -134,7 +162,6 @@ def cmd_list(args):
     db = VectorDB(args.db)
     docs = db.list_documents()
     db.close()
-
     if args.json:
         print(json.dumps(docs, ensure_ascii=False, indent=2))
     else:
@@ -144,6 +171,8 @@ def cmd_list(args):
         for d in docs:
             print(f"  [{d['source_type']}] {d['title'] or d['url']}  ({d['created_at']})")
             print(f"    {d['url']}")
+            if d.get("public_url"):
+                print(f"    {d['public_url']}")
 
 
 def cmd_stats(args):
@@ -154,28 +183,19 @@ def cmd_stats(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="linkvault", description="Link content vault — ingest, store, and search.")
+    parser = argparse.ArgumentParser(prog="linkvault", description="Link content vault, ingest, store, and search.")
     parser.add_argument("--db", default=DEFAULT_DB, help=f"SQLite database path (default: {DEFAULT_DB})")
-    parser.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help="Content storage directory")
+    parser.add_argument("--content-dir", default=DEFAULT_CONTENT_DIR, help="xfetch content root / bundle directory")
     parser.add_argument("--json", action="store_true", help="JSON output")
 
     sub = parser.add_subparsers(dest="command")
-
-    p_ingest = sub.add_parser("ingest", help="Fetch, save, and index URLs")
+    p_ingest = sub.add_parser("ingest", help="Ingest, publish, and index URLs via xfetch")
     p_ingest.add_argument("urls", nargs="+", help="URL(s) to ingest")
-    p_ingest.add_argument("--whisper-model", default="small",
-                          choices=["tiny", "base", "small", "medium", "large-v3"],
-                          help="Whisper model size for video transcription (default: small)")
-    p_ingest.add_argument("--no-transcribe", action="store_true",
-                          help="Skip audio transcription for video URLs")
-
-    p_search = sub.add_parser("search", help="Semantic search across content")
+    p_search = sub.add_parser("search", help="Semantic search across indexed bundle content")
     p_search.add_argument("query", help="Search query")
     p_search.add_argument("--top-k", type=int, default=5, help="Number of results")
-
-    p_list = sub.add_parser("list", help="List ingested documents")
-
-    p_stats = sub.add_parser("stats", help="Show database stats")
+    sub.add_parser("list", help="List ingested documents")
+    sub.add_parser("stats", help="Show database stats")
 
     args = parser.parse_args()
     if not args.command:

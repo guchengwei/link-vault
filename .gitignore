@@ -4,3 +4,6 @@ linkvault.db
 content/
 *.egg-info/
 .eggs/
+docs/
+logs/
+site-out/
