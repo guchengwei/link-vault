@@ -1,0 +1,8 @@
+{
+  "url": "https://example.com/test-article",
+  "title": "Test Article About AI",
+  "author": "Test Author",
+  "source_type": "webpage",
+  "kind": "webpage",
+  "tags": ["ai", "ml"]
+}
