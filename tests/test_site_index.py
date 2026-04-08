@@ -160,3 +160,4 @@ def test_build_homepage_index_normalizes_legacy_tweet_dates(tmp_path):
     assert 'class="section-title">2026-03' in html
     assert "Latest capture: <strong>2026-03-16</strong>" in html
     assert "Mon Mar" not in html
+    assert "x · 宝玉 · 2026-03-16" in html

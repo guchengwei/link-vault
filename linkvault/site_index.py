@@ -86,8 +86,8 @@ def _legacy_public_url(markdown_path: Path, metadata: dict) -> str:
     parsed = urlparse(url)
     host = (parsed.netloc or "unknown").replace(".", "-")
     digest = hashlib.sha1(url.encode("utf-8")).hexdigest()[:12] if url else hashlib.sha1(str(markdown_path).encode("utf-8")).hexdigest()[:12]
-    source_type = (metadata.get("source_type") or markdown_path.parts[1] if len(markdown_path.parts) > 1 else "web").strip().lower()
-    prefix = {"webpage": "web", "tweet": "tweets", "article": "web"}.get(source_type, source_type)
+    source_type = _normalize_source_type((metadata.get("source_type") or markdown_path.parts[1] if len(markdown_path.parts) > 1 else "web"))
+    prefix = source_type
     slug = f"{prefix}-{digest}-{host}"
     return f"https://guchengwei.github.io/link-vault/d/{slug}/"
 
@@ -116,6 +116,17 @@ def _month_sort_key(value: str) -> tuple[int, str]:
 
 
 SOURCE_ORDER = ["x", "web", "rss", "telegram", "wechat", "xiaohongshu", "youtube", "bilibili", "unknown"]
+
+
+def _normalize_source_type(value: str) -> str:
+    normalized = (value or "unknown").strip().lower()
+    return {
+        "webpage": "web",
+        "article": "web",
+        "tweet": "x",
+        "tweets": "x",
+        "twitter": "x",
+    }.get(normalized, normalized)
 
 
 def _format_count(value: int) -> str:
@@ -167,7 +178,7 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
                 title=document.get("title") or document.get("source_url") or public_url or publish_path.parent.name,
                 public_url=public_url,
                 source_url=document.get("source_url") or document.get("canonical_url") or "",
-                source_type=document.get("source_type") or "unknown",
+                source_type=_normalize_source_type(document.get("source_type") or "unknown"),
                 author_label=_author_label(document),
                 created_at=document.get("created_at") or "",
                 bundle_path=publish.get("target", {}).get("bundle_path") or str(publish_path.parent.relative_to(content_path)),
@@ -191,7 +202,7 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
                 title=metadata.get("title") or metadata.get("url") or markdown_path.stem,
                 public_url=public_url,
                 source_url=metadata.get("url") or metadata.get("final_url") or "",
-                source_type={"webpage": "web", "tweet": "tweets", "article": "web"}.get((metadata.get("source_type") or "web").strip().lower(), (metadata.get("source_type") or "web").strip().lower()),
+                source_type=_normalize_source_type(metadata.get("source_type") or "web"),
                 author_label=(metadata.get("author") or "").strip(),
                 created_at=metadata.get("created_at") or metadata.get("fetched_at") or "",
                 bundle_path=str(markdown_path.relative_to(content_path)),
