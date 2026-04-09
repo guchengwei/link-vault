@@ -1,0 +1,13 @@
+{
+  "published": true,
+  "public_url": "https://guchengwei.github.io/link-vault/d/web-21c97d660989-news-ycombinator-com/",
+  "target": {
+    "type": "github_pages",
+    "repo_owner": "guchengwei",
+    "repo_name": "link-vault",
+    "branch": "main",
+    "bundle_path": "content/2026-04/web-21c97d660989-news-ycombinator-com",
+    "site_path": "site/d/web-21c97d660989-news-ycombinator-com/index.html"
+  },
+  "revision": null
+}
