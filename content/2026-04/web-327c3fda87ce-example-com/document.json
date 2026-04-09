@@ -1,0 +1,25 @@
+{
+  "source_type": "web",
+  "source_url": "https://example.com",
+  "canonical_url": "https://example.com",
+  "external_id": "327c3fda87ce",
+  "title": "Example Domain",
+  "author": "example.com",
+  "author_handle": "example.com",
+  "created_at": null,
+  "language": null,
+  "text": "Example Domain Example Domain\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\nLearn more",
+  "markdown": "# Example Domain\n\n- Source: https://example.com\n- Author: example.com\n\nExample Domain Example Domain\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\nLearn more\n",
+  "summary": null,
+  "tags": [],
+  "assets": [],
+  "metadata": {
+    "platform": "web",
+    "content_type": "text/html"
+  },
+  "lineage": {
+    "fetched_at": "2026-04-09T03:05:32Z",
+    "connector": "web",
+    "runtime_version": "0.1.0"
+  }
+}
