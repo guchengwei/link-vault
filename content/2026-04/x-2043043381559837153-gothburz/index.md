@@ -1,0 +1,53 @@
+# I am a Web3 Ambassador at World Liberty Financial.
+
+- Source: https://x.com/gothburz/status/2043043381559837153
+- Author: @gothburz
+- Created: 2026-04-11T19:07:54Z
+
+I am a Web3 Ambassador at World Liberty Financial.
+
+There are 12 of us on the team page. 4 are named Trump. 3 are named Witkoff. The page calls us "the passionate minds shaping the future of finance."
+
+600,000 wallets bought our memecoin. They lost $3.87 billion. The family collected $350 million in trading fees. It launched 3 days before the inauguration. 80% of the supply went to CIC Digital LLC and Fight Fight Fight LLC. I did not choose the names. I designed the allocation, the vesting, the timing, and the distance between the product and the President.
+
+The distance is my best work.
+
+I am the reason these events are unrelated.
+
+World Liberty Financial sends 75 cents of every dollar to DT Marks DEFI LLC. That is the family entity. Zero capital contributed. Zero liability assumed. I wrote this into the Gold Paper. Page 14. The lawyers bound it in white leather. The binding cost more than the due diligence.
+
+Justin Sun invested $75 million. He was facing SEC fraud charges. The SEC dropped the case. He is now our advisor. These events are unrelated.
+
+Changpeng Zhao pleaded guilty to federal money laundering violations. He received a presidential pardon. The SEC dropped its lawsuit against his exchange the same week we listed our stablecoin. Then the exchange settled a $2 billion deal entirely in that stablecoin. These events are unrelated.
+
+Arthur Hayes, Benjamin Delo, and Samuel Reed of BitMEX pleaded guilty to Bank Secrecy Act violations. All 3 received presidential pardons. Then the company itself was pardoned. $100 million in fines. Gone. An American first. These events are unrelated.
+
+Sheikh Tahnoun of Abu Dhabi paid $500 million for a 49% stake that was never publicly disclosed. Then the administration approved semiconductor exports to his companies over national security objections. These events are unrelated.
+
+Everything is unrelated. I track the unrelatedness on a dashboard I built. The dashboard has 7 columns now. I am proud of the dashboard.
+
+On May 22nd, 220 people paid a combined $148 million to eat dinner with the America First president. Over half were foreign nationals. Justin Sun paid $18.5 million for the first seat. He visited the Executive Office Building the day before. I designed the seating chart. I put it on the Investor Confidence page. That page is doing well.
+
+The team page lists 3 Witkoffs. All 3 are Co-Founders.
+
+Steven Witkoff is the President's Middle East envoy. He testified as a character witness at the President's fraud trial.
+
+His son Zach runs the crypto operation. His son Alex is also a Co-Founder. I have not been told what Alex co-founded.
+
+The father runs the diplomacy. The sons run the platform. The family runs both. That is organizational efficiency.
+
+Barron is 19. His title is Web3 Ambassador. The same as mine. Donald Jr. called the conflicts of interest "complete nonsense." Eric launched a Bitcoin mining company called American Bitcoin. America First. The mining partner is Hut 8. Hut 8 was founded in Canada. America First means the name.
+
+On March 6th, the President signed Executive Order 14233 creating a Strategic Bitcoin Reserve. The order directs the government to hold Bitcoin. The President's family holds billions in Bitcoin. The executive order appreciates the President's assets by presidential decree. I did not write the executive order. I made sure it looked unrelated to the portfolio.
+
+Trump Media put $2 billion of Bitcoin on its balance sheet. The ticker symbol is DJT. His initials. The press secretary said it is absurd to insinuate the President profits off the presidency. Forbes calculated his crypto holdings exceed the combined value of Mar-a-Lago and Trump Tower. I would call that absurd too. That is my job.
+
+600,000 wallets bought in. 1 of them asked why she could not withdraw her funds. I told her the protocol was experiencing dynamic market conditions. She asked what that meant. I sent her the Gold Paper. She said she had read the Gold Paper. I muted her channel. Dynamic means the conditions change. The condition that changed was her access.
+
+A congressman called us the world's most corrupt crypto startup operation. We put it on a coffee mug. Ironic merchandise. $45. The revenue split on the mug is also 75/25.
+
+My own tokens vest on a different schedule. I wrote that schedule. That is not in the Gold Paper.
+
+The memecoin funds the family. The family funds the platform. The platform funds the stablecoin. The stablecoin funds the deals. The deals require the pardons. The pardons free the partners. The partners fund the platform. The President signs the executive orders. The executive orders inflate the assets. The assets fund the family.
+
+I am the reason these events are unrelated.
