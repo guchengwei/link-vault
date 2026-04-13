@@ -19,15 +19,15 @@
     "screen_name": "gothburz",
     "display_name": "Peter Girnus 🦅",
     "stats": {
-      "likes": 12475,
-      "retweets": 4100,
-      "replies": 966,
-      "views": 2041461
+      "likes": 20815,
+      "retweets": 6700,
+      "replies": 1534,
+      "views": 4376590
     },
     "raw_source": "fxtwitter"
   },
   "lineage": {
-    "fetched_at": "2026-04-12T11:22:48Z",
+    "fetched_at": "2026-04-12T23:39:04Z",
     "connector": "x",
     "backend": "fxtwitter",
     "runtime_version": "0.1.0"
