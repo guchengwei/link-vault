@@ -22,12 +22,13 @@
       "likes": 83,
       "retweets": 20,
       "replies": 5,
-      "views": 76952
+      "views": 76956
     },
-    "raw_source": "fxtwitter"
+    "raw_source": "fxtwitter",
+    "quote": null
   },
   "lineage": {
-    "fetched_at": "2026-04-13T11:45:02Z",
+    "fetched_at": "2026-04-13T12:01:47Z",
     "connector": "x",
     "backend": "fxtwitter",
     "runtime_version": "0.1.0"
