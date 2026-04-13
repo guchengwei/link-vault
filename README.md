@@ -11,6 +11,7 @@ link-vault now treats `xfetch` as the canonical runtime for ingest, bundle creat
 - allow partial success when local ingest succeeds but publish fails
 - index local bundle markdown for semantic search
 - keep local document metadata, bundle paths, and publish status in SQLite
+- treat semantic indexing as best-effort so missing local ML deps do not break save/publish
 
 ## Quickstart
 
@@ -24,7 +25,25 @@ python -m linkvault stats
 
 ## /save behavior
 
-`/save <url>` should run:
+Canonical save path for Hermes and other callers:
+
+```bash
+cd /Users/zion/xfetch
+python3 -m xfetch save "<url>" \
+  --content-root /Users/zion/xfetch/content-out \
+  --json
+```
+
+With env-configured publish target:
+
+```bash
+export XFETCH_TARGET_REPO='/Users/zion/link-vault-publish'
+export XFETCH_REPO_OWNER='guchengwei'
+export XFETCH_REPO_NAME='link-vault'
+python3 -m xfetch save "<url>" --content-root /Users/zion/xfetch/content-out --json
+```
+
+If link-vault is used as the wrapper for local semantic indexing/bookkeeping, run:
 
 ```bash
 cd /home/nvidia/.openclaw/workspace/link-vault && python3 -m linkvault --db /home/nvidia/.openclaw/workspace/link-vault/linkvault.db --content-dir /home/nvidia/.openclaw/workspace/link-vault/content --json ingest "<url>"
@@ -35,6 +54,7 @@ Response semantics:
 - `Saved + published: <title> -> <public_url>`
 - `Saved locally, publish failed: <title> -> <publish_error>`
 - `Save failed: <url> -> <error>`
+- when JSON output is used, indexing failures are reported separately via `index_status` and `index_error` and should not be treated as save failure if publish succeeded
 
 ## Architecture
 
@@ -95,6 +115,12 @@ For publish to work end to end, configure:
 - `XFETCH_TARGET_REPO`
 - `XFETCH_REPO_OWNER`
 - `XFETCH_REPO_NAME`
+
+Optional xfetch save defaults:
+
+- `XFETCH_BRANCH`
+- `XFETCH_CONTENT_SUBDIR`
+- `XFETCH_SITE_SUBDIR`
 
 Example:
 
