@@ -1,0 +1,57 @@
+{
+  "source_type": "x",
+  "source_url": "https://x.com/i/status/2042459055483207818",
+  "canonical_url": "https://x.com/tianle_cai/status/2042459055483207818",
+  "external_id": "2042459055483207818",
+  "title": "Dario Says Continual Learning Is Solved. Is It?",
+  "author": "Tianle Cai",
+  "author_handle": "tianle_cai",
+  "created_at": "2026-04-10T04:26:00Z",
+  "language": null,
+  "text": "Dario Says Continual Learning Is Solved. Is It?\n\nTLDR: I'd view continual learning more as an \"arrow\" than a \"line\" — it's the collective effort to push the task horizon that an LLM can reliably handle.\nWTF is continual learning\nI've been thinking\n\nTLDR: I'd view continual learning more as an \"arrow\" than a \"line\" — it's the collective effort to push the task horizon that an LLM can reliably handle.\n\nWTF is continual learning\n\nI've been thinking about and working on \"continual learning\" for a few years (especially after realizing https://x.com/compose/articles/edit/1848072559721578496).\n\nYet this and several related concepts — continual learning, test-time training, self-evolving, lifelong learning — remain frustratingly vague, especially as they gain popularity. It doesn't help that in traditional ML, continual learning is mostly seen as synonymous with combating catastrophic forgetting...\n\nAfter trying to explain what I actually work on to many friends, I gradually realized why people get confused. In this article, I'll offer my personal definition of continual learning and place it in a broader context.\n\nThe key reason for the confusion is that people think in terms of methods that each contribute a discrete piece to the system — pretraining, SFT, RL. But continual learning is better understood as a set of efforts unified by a directional goal: it's an arrow, not a point.\n\nWhat's the arrow pointing to\n\nTo arrive at a definition, it helps to think backwards from what we actually want continual learning to achieve.\n\nI really like the point of view from the task-completion horizon (from @METR_Evals) to track the progress of AI. We can treat the task horizon that an LLM can reliably handle as a north-star metric for model progress, analogous to transistor density in Moore's Law (though harder to measure).\n\nFrom this perspective, all existing techniques -- pretrain, SFT, RL, agentic context management -- can be viewed as a way to keep pushing the horizon. As with the S-curves in *The Innovator's Dilemma*, new techniques may initially underperform existing ones but eventually surpass them — a pattern we've seen repeatedly, most recently in the wave of agentic coding progress led by @AnthropicAI .\n\nWithin this context, I'd like to view continual learning as:\n\n\"The set of efforts aimed at breaking past the feasible horizon of current techniques.\"\n\nThe intuition is simple: if a model cannot learn new things while performing a task, it will struggle when the task horizon grows very long.\n\nBroadly speaking, when we only had pretraining, SFT was the \"continual learning\" — it enabled a base model to \"learn\" from a short context and answer relatively simple questions. And now that we have RL, agentic context management is the next \"continual learning\" — it lets a model compress, take notes, and extend its memory beyond the context window. That's also the reason @DarioAmodei thought continual learning had been solved in his interview. To some extent, yes — context management plus engineering improvements may well push the task horizon to weeks or even months. But the Riemann hypothesis hasn't been solved. Many very long-horizon tasks remain out of reach. So perhaps human-level continual learning is \"solved\", but the revolution is not yet complete — comrades still need to work hard.\n\nConclusion\n\nTo sum up, I'd advocate for a directional definition of continual learning and its related concepts. I hope this article makes things a bit clearer — so that we know what we talk about when we talk about continual learning.",
+  "markdown": "# Dario Says Continual Learning Is Solved. Is It?\n\n- Source: https://x.com/tianle_cai/status/2042459055483207818\n- Author: @tianle_cai\n- Created: 2026-04-10T04:26:00Z\n\nDario Says Continual Learning Is Solved. Is It?\n\nTLDR: I'd view continual learning more as an \"arrow\" than a \"line\" — it's the collective effort to push the task horizon that an LLM can reliably handle.\nWTF is continual learning\nI've been thinking\n\nTLDR: I'd view continual learning more as an \"arrow\" than a \"line\" — it's the collective effort to push the task horizon that an LLM can reliably handle.\n\nWTF is continual learning\n\nI've been thinking about and working on \"continual learning\" for a few years (especially after realizing https://x.com/compose/articles/edit/1848072559721578496).\n\nYet this and several related concepts — continual learning, test-time training, self-evolving, lifelong learning — remain frustratingly vague, especially as they gain popularity. It doesn't help that in traditional ML, continual learning is mostly seen as synonymous with combating catastrophic forgetting...\n\nAfter trying to explain what I actually work on to many friends, I gradually realized why people get confused. In this article, I'll offer my personal definition of continual learning and place it in a broader context.\n\nThe key reason for the confusion is that people think in terms of methods that each contribute a discrete piece to the system — pretraining, SFT, RL. But continual learning is better understood as a set of efforts unified by a directional goal: it's an arrow, not a point.\n\n![](assets/image-01.jpg)\n\nWhat's the arrow pointing to\n\nTo arrive at a definition, it helps to think backwards from what we actually want continual learning to achieve.\n\nI really like the point of view from the task-completion horizon (from @METR_Evals) to track the progress of AI. We can treat the task horizon that an LLM can reliably handle as a north-star metric for model progress, analogous to transistor density in Moore's Law (though harder to measure).\n\n![](assets/image-02.jpg)\n\nFrom this perspective, all existing techniques -- pretrain, SFT, RL, agentic context management -- can be viewed as a way to keep pushing the horizon. As with the S-curves in *The Innovator's Dilemma*, new techniques may initially underperform existing ones but eventually surpass them — a pattern we've seen repeatedly, most recently in the wave of agentic coding progress led by @AnthropicAI .\n\n![](assets/image-03.jpg)\n\nWithin this context, I'd like to view continual learning as:\n\n\"The set of efforts aimed at breaking past the feasible horizon of current techniques.\"\n\nThe intuition is simple: if a model cannot learn new things while performing a task, it will struggle when the task horizon grows very long.\n\nBroadly speaking, when we only had pretraining, SFT was the \"continual learning\" — it enabled a base model to \"learn\" from a short context and answer relatively simple questions. And now that we have RL, agentic context management is the next \"continual learning\" — it lets a model compress, take notes, and extend its memory beyond the context window. That's also the reason @DarioAmodei thought continual learning had been solved in his interview. To some extent, yes — context management plus engineering improvements may well push the task horizon to weeks or even months. But the Riemann hypothesis hasn't been solved. Many very long-horizon tasks remain out of reach. So perhaps human-level continual learning is \"solved\", but the revolution is not yet complete — comrades still need to work hard.\n\nConclusion\n\nTo sum up, I'd advocate for a directional definition of continual learning and its related concepts. I hope this article makes things a bit clearer — so that we know what we talk about when we talk about continual learning.\n",
+  "summary": null,
+  "tags": [],
+  "assets": [
+    {
+      "url": "https://pbs.twimg.com/media/HFg6r31bQAMSLmD.jpg",
+      "type": "image",
+      "source": "article_inline",
+      "media_id": "2042446956409339907",
+      "local_path": "assets/image-01.jpg"
+    },
+    {
+      "url": "https://pbs.twimg.com/media/HFg-Y1AbQAEFYtf.jpg",
+      "type": "image",
+      "source": "article_inline",
+      "media_id": "2042451027279167489",
+      "local_path": "assets/image-02.jpg"
+    },
+    {
+      "url": "https://pbs.twimg.com/media/HFg_HHkakAASCvX.jpg",
+      "type": "image",
+      "source": "article_inline",
+      "media_id": "2042451822535938048",
+      "local_path": "assets/image-03.jpg"
+    }
+  ],
+  "metadata": {
+    "platform": "x",
+    "tweet_id": "2042459055483207818",
+    "screen_name": "tianle_cai",
+    "display_name": "Tianle Cai",
+    "stats": {
+      "likes": 558,
+      "retweets": 83,
+      "replies": 18,
+      "views": 168369
+    },
+    "raw_source": "fxtwitter"
+  },
+  "lineage": {
+    "fetched_at": "2026-04-13T03:21:19Z",
+    "connector": "x",
+    "backend": "fxtwitter",
+    "runtime_version": "0.1.0"
+  }
+}
