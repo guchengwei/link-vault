@@ -29,6 +29,29 @@ def _extract_doc_fields(ingest_payload: dict, bundle_payload: dict) -> dict:
     }
 
 
+
+def _index_document(db: VectorDB, doc: dict, bundle_path: str, public_url: str, publish_status: str, publish_error: str) -> tuple[str, str]:
+    try:
+        db.ingest(
+            url=doc["url"],
+            source_type=doc["source_type"],
+            title=doc["title"],
+            author=doc["author"],
+            text=doc["text"],
+            metadata=doc["metadata"],
+            md_path=doc["index_path"],
+            bundle_path=bundle_path,
+            index_path=doc["index_path"],
+            public_url=public_url,
+            publish_status=publish_status,
+            publish_error=publish_error,
+        )
+        return "indexed", ""
+    except Exception as exc:
+        return "failed", str(exc)
+
+
+
 def _ingest(urls: list[str], db_path: str = _DB, content_dir: str = _CONTENT_DIR) -> dict:
     db = VectorDB(db_path)
     results = []
@@ -44,26 +67,22 @@ def _ingest(urls: list[str], db_path: str = _DB, content_dir: str = _CONTENT_DIR
             published = False
             public_url = ""
             publish_error = ""
+            publish_status = "failed"
             try:
                 publish_payload = publish_bundle(bundle_path)
                 published = bool(publish_payload.get("ok", True))
                 public_url = publish_payload.get("public_url") or publish_payload.get("url") or ""
                 publish_error = publish_payload.get("error") or ""
+                publish_status = "published" if published else "failed"
             except Exception as exc:
                 publish_error = str(exc)
 
-            db.ingest(
-                url=doc["url"],
-                source_type=doc["source_type"],
-                title=doc["title"],
-                author=doc["author"],
-                text=doc["text"],
-                metadata=doc["metadata"],
-                md_path=doc["index_path"],
+            index_status, index_error = _index_document(
+                db,
+                doc,
                 bundle_path=bundle_path,
-                index_path=doc["index_path"],
                 public_url=public_url,
-                publish_status="published" if published else "failed",
+                publish_status=publish_status,
                 publish_error=publish_error,
             )
             results.append({
@@ -76,6 +95,8 @@ def _ingest(urls: list[str], db_path: str = _DB, content_dir: str = _CONTENT_DIR
                 "public_url": public_url,
                 "error": None,
                 "publish_error": publish_error or None,
+                "index_status": index_status,
+                "index_error": index_error or None,
             })
         except XFetchError as exc:
             results.append({
@@ -88,6 +109,8 @@ def _ingest(urls: list[str], db_path: str = _DB, content_dir: str = _CONTENT_DIR
                 "public_url": "",
                 "error": str(exc),
                 "publish_error": None,
+                "index_status": None,
+                "index_error": None,
             })
     db.close()
     return {"ok": all(not r["error"] for r in results), "results": results}

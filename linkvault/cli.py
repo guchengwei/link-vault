@@ -52,6 +52,30 @@ def _extract_doc_fields(ingest_payload: dict, bundle_payload: dict) -> dict:
     }
 
 
+
+def _index_document(db: VectorDB, doc: dict, bundle_path: str, public_url: str, publish_status: str, publish_error: str) -> tuple[str, str]:
+    try:
+        db.ingest(
+            url=doc["url"],
+            source_type=doc["source_type"],
+            title=doc["title"],
+            author=doc["author"],
+            text=doc["text"],
+            metadata=doc["metadata"],
+            md_path=doc["index_path"],
+            bundle_path=bundle_path,
+            index_path=doc["index_path"],
+            public_url=public_url,
+            publish_status=publish_status,
+            publish_error=publish_error,
+        )
+        return "indexed", ""
+    except Exception as exc:
+        _log.warning("indexing failed | url=%s | bundle=%s | error=%s", doc.get("url"), bundle_path, exc)
+        return "failed", str(exc)
+
+
+
 def _ingest_one(url: str, db: VectorDB, content_dir: str) -> dict:
     ingest_payload = ingest_url(url, content_root=content_dir)
     bundle_path = ingest_payload.get("bundle_path") or ingest_payload.get("bundle") or ""
@@ -75,16 +99,10 @@ def _ingest_one(url: str, db: VectorDB, content_dir: str) -> dict:
         publish_status = "failed"
         publish_error = str(exc)
 
-    db.ingest(
-        url=doc["url"],
-        source_type=doc["source_type"],
-        title=doc["title"],
-        author=doc["author"],
-        text=doc["text"],
-        metadata=doc["metadata"],
-        md_path=doc["index_path"],
+    index_status, index_error = _index_document(
+        db,
+        doc,
         bundle_path=bundle_path,
-        index_path=doc["index_path"],
         public_url=public_url,
         publish_status=publish_status,
         publish_error=publish_error,
@@ -101,6 +119,8 @@ def _ingest_one(url: str, db: VectorDB, content_dir: str) -> dict:
         "public_url": public_url,
         "error": None,
         "publish_error": publish_error or None,
+        "index_status": index_status,
+        "index_error": index_error or None,
     }
 
 
@@ -124,6 +144,8 @@ def cmd_ingest(args):
                 "public_url": "",
                 "error": str(exc),
                 "publish_error": None,
+                "index_status": None,
+                "index_error": None,
             })
     db.close()
 
