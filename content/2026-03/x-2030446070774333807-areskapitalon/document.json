@@ -27,7 +27,7 @@
     "raw_source": "fxtwitter"
   },
   "lineage": {
-    "fetched_at": "2026-04-13T10:47:48Z",
+    "fetched_at": "2026-04-13T10:47:59Z",
     "connector": "x",
     "backend": "fxtwitter",
     "runtime_version": "0.1.0"
