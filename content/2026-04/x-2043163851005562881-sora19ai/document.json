@@ -1,0 +1,35 @@
+{
+  "source_type": "x",
+  "source_url": "https://x.com/sora19ai/status/2043163851005562881?s=20",
+  "canonical_url": "https://x.com/sora19ai/status/2043163851005562881",
+  "external_id": "2043163851005562881",
+  "title": "エージェントハーネス、これが正解だった。",
+  "author": "そら ☁️ AgentSkills 自動化オタク📱",
+  "author_handle": "sora19ai",
+  "created_at": "2026-04-12T03:06:36Z",
+  "language": "ja",
+  "text": "エージェントハーネス、これが正解だった。",
+  "markdown": "# エージェントハーネス、これが正解だった。\n\n- Source: https://x.com/sora19ai/status/2043163851005562881\n- Author: @sora19ai\n- Created: 2026-04-12T03:06:36Z\n\nエージェントハーネス、これが正解だった。\n",
+  "summary": null,
+  "tags": [],
+  "assets": [],
+  "metadata": {
+    "platform": "x",
+    "tweet_id": "2043163851005562881",
+    "screen_name": "sora19ai",
+    "display_name": "そら ☁️ AgentSkills 自動化オタク📱",
+    "stats": {
+      "likes": 391,
+      "retweets": 23,
+      "replies": 3,
+      "views": 122102
+    },
+    "raw_source": "fxtwitter"
+  },
+  "lineage": {
+    "fetched_at": "2026-04-13T11:48:34Z",
+    "connector": "x",
+    "backend": "fxtwitter",
+    "runtime_version": "0.1.0"
+  }
+}
