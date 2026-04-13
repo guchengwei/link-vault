@@ -1,8 +1,16 @@
-# Your harness, your memory
+# エージェントハーネス、これが正解だった。
 
 - Source: https://x.com/sora19ai/status/2043163851005562881
 - Author: @sora19ai
 - Created: 2026-04-12T03:06:36Z
+
+エージェントハーネス、これが正解だった。
+
+## Quoted article
+### Your harness, your memory
+- Source: https://x.com/hwchase17/status/2042978500567609738
+- Author: @hwchase17
+- Created: 2026-04-11T14:50:05Z
 
 Your harness, your memory
 
