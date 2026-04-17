@@ -29,6 +29,8 @@ Marketing is dead. Long live The Distribution Engineer.
 
 Your entire marketing department is about to be replaced by one person with an AI agent swarm. This is how it happens, who survives, and why the most important job title in tech doesnt exist yet.
 
+![](assets/image-01.jpg)
+
 For decades the engineer was God.
 
 The person who could build the thing held all the power. Everyone else, the marketers, the operators, sales, bd, the "growth people", sat around waiting for the engineer to finish so they could do their jobs.
