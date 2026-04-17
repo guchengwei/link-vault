@@ -1,6 +1,6 @@
 {
   "source_type": "x",
-  "source_url": "https://x.com/dotey/status/2029842320443519319?s=46",
+  "source_url": "https://x.com/dotey/status/2029842320443519319",
   "canonical_url": "https://x.com/dotey/status/2029842320443519319",
   "external_id": "2029842320443519319",
   "title": "我做 AI 翻译这件事，前前后后折腾了快两年。从最早手写提示词，到现在用 Agent 自动分块、并行翻译、审校润色，中间踩了不少坑，也攒了不少经验。最近把这些经",
@@ -22,13 +22,13 @@
       "likes": 261,
       "retweets": 43,
       "replies": 20,
-      "views": 40762
+      "views": 40769
     },
     "raw_source": "fxtwitter",
     "quote": null
   },
   "lineage": {
-    "fetched_at": "2026-04-17T16:11:57Z",
+    "fetched_at": "2026-04-17T17:19:38Z",
     "connector": "x",
     "backend": "fxtwitter",
     "runtime_version": "0.1.0"
