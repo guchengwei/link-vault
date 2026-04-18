@@ -1,0 +1,44 @@
+{
+  "source_type": "x",
+  "source_url": "https://x.com/deronin_/status/2045420155434320270?s=46",
+  "canonical_url": "https://x.com/DeRonin_/status/2045420155434320270",
+  "external_id": "2045420155434320270",
+  "title": "10 GitHub repos to spend 60-90% less tokens in Claude Code:",
+  "author": "Ronin",
+  "author_handle": "DeRonin_",
+  "created_at": "2026-04-18T08:32:21Z",
+  "language": "en",
+  "text": "10 GitHub repos to spend 60-90% less tokens in Claude Code:\n\n1. RTK (Rust Token Killer)\n\nCLI proxy that filters terminal output before it hits your context\n\n- 60-90% reduction on common dev commands\n- one binary, zero dependencies\n- works with Claude Code, Cursor, Copilot\n\nRepo: http://github.com/rtk-ai/rtk\n\n2. Context Mode\n\nSandboxes raw tool output into SQLite instead of dumping it into context\n\n- 98% context reduction on Playwright, GitHub, logs\n- only clean summaries enter your conversation\n- works as Claude Code plugin\n\nRepo: http://github.com/mksglu/context-mode\n\n3. code-review-graph\n\nLocal knowledge graph that maps your codebase with Tree-sitter\n\n- Claude reads only what matters, not the entire repo\n- 49x token reduction on large monorepos\n- 6.8x on average reviews\n\nRepo: http://github.com/tirth8205/code-review-graph\n\n4. Token Savior\n\nMCP server that navigates code by symbols, not full files\n\n- 97% reduction on code navigation\n- persistent memory across sessions\n- 69 tools, zero external deps\n\nRepo: http://github.com/Mibayy/token-savior\n\n5. Caveman Claude\n\nmakes Claude talk like a caveman to cut output tokens\n\n- 65-75% output reduction\n- one-line install\n- keeps full technical accuracy\n\nRepo: http://github.com/JuliusBrussee/caveman\n\n6. claude-token-efficient\n\none CLAUDE.md file that keeps responses terse\n\n- drop-in, no code changes\n- reduces output verbosity on heavy workflows\n- best for output-heavy sessions\n\nRepo: http://github.com/drona23/claude-token-efficient\n\n7. token-optimizer-mcp\n\nMCP server with caching, compression, and smart tool intelligence\n\n- 95%+ token reduction through intelligent caching\n- compresses repeated tool outputs\n\nRepo: http://github.com/ooples/token-optimizer-mcp\n\n8. claude-token-optimizer\n\nreusable setup prompts for optimizing any project\n\n- 90% token savings in 5 minutes\n- reduces doc token usage from 11K to 1.3K\n\nRepo: http://github.com/nadimtuhin/claude-token-optimizer\n\n9. token-optimizer\n\nfinds ghost tokens that silently eat your context\n\n- survives compaction without losing quality\n- fixes context quality decay\n\nRepo: http://github.com/alexgreensh/token-optimizer\n\n10. claude-context (by Zilliz)\n\ncode search MCP that makes your entire codebase the context\n\n- ~40% reduction with equivalent retrieval quality\n- hybrid BM25 + dense vector search\n\nRepo: http://github.com/zilliztech/claude-context\n\n[ how to stack them ]:\n\nyou don't need all 10. pick 2-3 based on your workflow:\n\n> heavy terminal output? RTK\n> big codebase? code-review-graph + Token Savior\n> lots of MCP servers? Context Mode\n> quick fix? Caveman + claude-token-efficient\n\nmost people are burning tokens without knowing it\n\nrun /context in a fresh session and see how much is gone before you even type a word\n\nyour pocket will thank me later :<)",
+  "markdown": "# 10 GitHub repos to spend 60-90% less tokens in Claude Code:\n\n- Source: https://x.com/DeRonin_/status/2045420155434320270\n- Author: @DeRonin_\n- Created: 2026-04-18T08:32:21Z\n\n10 GitHub repos to spend 60-90% less tokens in Claude Code:\n\n1. RTK (Rust Token Killer)\n\nCLI proxy that filters terminal output before it hits your context\n\n- 60-90% reduction on common dev commands\n- one binary, zero dependencies\n- works with Claude Code, Cursor, Copilot\n\nRepo: http://github.com/rtk-ai/rtk\n\n2. Context Mode\n\nSandboxes raw tool output into SQLite instead of dumping it into context\n\n- 98% context reduction on Playwright, GitHub, logs\n- only clean summaries enter your conversation\n- works as Claude Code plugin\n\nRepo: http://github.com/mksglu/context-mode\n\n3. code-review-graph\n\nLocal knowledge graph that maps your codebase with Tree-sitter\n\n- Claude reads only what matters, not the entire repo\n- 49x token reduction on large monorepos\n- 6.8x on average reviews\n\nRepo: http://github.com/tirth8205/code-review-graph\n\n4. Token Savior\n\nMCP server that navigates code by symbols, not full files\n\n- 97% reduction on code navigation\n- persistent memory across sessions\n- 69 tools, zero external deps\n\nRepo: http://github.com/Mibayy/token-savior\n\n5. Caveman Claude\n\nmakes Claude talk like a caveman to cut output tokens\n\n- 65-75% output reduction\n- one-line install\n- keeps full technical accuracy\n\nRepo: http://github.com/JuliusBrussee/caveman\n\n6. claude-token-efficient\n\none CLAUDE.md file that keeps responses terse\n\n- drop-in, no code changes\n- reduces output verbosity on heavy workflows\n- best for output-heavy sessions\n\nRepo: http://github.com/drona23/claude-token-efficient\n\n7. token-optimizer-mcp\n\nMCP server with caching, compression, and smart tool intelligence\n\n- 95%+ token reduction through intelligent caching\n- compresses repeated tool outputs\n\nRepo: http://github.com/ooples/token-optimizer-mcp\n\n8. claude-token-optimizer\n\nreusable setup prompts for optimizing any project\n\n- 90% token savings in 5 minutes\n- reduces doc token usage from 11K to 1.3K\n\nRepo: http://github.com/nadimtuhin/claude-token-optimizer\n\n9. token-optimizer\n\nfinds ghost tokens that silently eat your context\n\n- survives compaction without losing quality\n- fixes context quality decay\n\nRepo: http://github.com/alexgreensh/token-optimizer\n\n10. claude-context (by Zilliz)\n\ncode search MCP that makes your entire codebase the context\n\n- ~40% reduction with equivalent retrieval quality\n- hybrid BM25 + dense vector search\n\nRepo: http://github.com/zilliztech/claude-context\n\n[ how to stack them ]:\n\nyou don't need all 10. pick 2-3 based on your workflow:\n\n> heavy terminal output? RTK\n> big codebase? code-review-graph + Token Savior\n> lots of MCP servers? Context Mode\n> quick fix? Caveman + claude-token-efficient\n\nmost people are burning tokens without knowing it\n\nrun /context in a fresh session and see how much is gone before you even type a word\n\nyour pocket will thank me later :<)\n\n![](assets/image-01.jpg)\n",
+  "summary": null,
+  "tags": [],
+  "assets": [
+    {
+      "url": "https://pbs.twimg.com/media/HGLKx_ybYAAZ58B.jpg?name=orig",
+      "type": "image",
+      "source": "tweet_media",
+      "media_id": "2045420141064970240",
+      "local_path": "assets/image-01.jpg"
+    }
+  ],
+  "metadata": {
+    "platform": "x",
+    "tweet_id": "2045420155434320270",
+    "screen_name": "DeRonin_",
+    "display_name": "Ronin",
+    "stats": {
+      "likes": 61,
+      "retweets": 3,
+      "replies": 10,
+      "views": 6534
+    },
+    "raw_source": "fxtwitter",
+    "quote": null
+  },
+  "lineage": {
+    "fetched_at": "2026-04-18T10:37:54Z",
+    "connector": "x",
+    "backend": "fxtwitter",
+    "runtime_version": "0.1.0"
+  }
+}
