@@ -1,0 +1,13 @@
+{
+  "published": true,
+  "public_url": "https://guchengwei.github.io/link-vault/d/web-8f0c968e2bc6-www-bilibili-com/",
+  "target": {
+    "type": "github_pages",
+    "repo_owner": "guchengwei",
+    "repo_name": "link-vault",
+    "branch": "main",
+    "bundle_path": "content/2026-05/web-8f0c968e2bc6-www-bilibili-com",
+    "site_path": "site/d/web-8f0c968e2bc6-www-bilibili-com/index.html"
+  },
+  "revision": null
+}
