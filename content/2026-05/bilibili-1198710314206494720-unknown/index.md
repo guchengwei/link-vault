@@ -13,7 +13,11 @@ GPT 的文风不能只用“黑话”概括。有些看似别扭的词其实是�
 
 专业术语需要从“黑话”里先捞出来。真正的术语有三个特征：压缩稳定概念，减少协作歧义，指向具体动作或判断。满足这三点的词，不该因为不像日常中文而被反对。
 
-落盘：把状态、缓存、日志或结果持久化到磁盘，而不是只留在内存里；它区分了“临时存在”和“可恢复、可审计、可复现”的工程状态 fixture / 夹具 测试运行前准备好的可重复上下文、依赖、数据或资源 pytest 文档里 fixture 本来就强调为测试提供可靠、可重复的上下文[1] wiring / 接线 把模块、依赖、配置、事件流或 handler 连接起来；它不是“写代码”的同义词，而是指组件之间的装配关系 preset / 预设 预先配置好的一组参数、样式、位置或策略；英文 preset 本来就有预先设置、预先选择好的设置项之义[2] framing 对问题边界、目标函数、评价口径和叙事角度的框定；很多争论的差异不在事实，而在问题被如何 frame
+1. 落盘：把状态、缓存、日志或结果持久化到磁盘，而不是只留在内存里；它区分了“临时存在”和“可恢复、可审计、可复现”的工程状态
+2. fixture / 夹具 测试运行前准备好的可重复上下文、依赖、数据或资源 pytest 文档里 fixture 本来就强调为测试提供可靠、可重复的上下文[1]
+3. wiring / 接线 把模块、依赖、配置、事件流或 handler 连接起来；它不是“写代码”的同义词，而是指组件之间的装配关系
+4. preset / 预设 预先配置好的一组参数、样式、位置或策略；英文 preset 本来就有预先设置、预先选择好的设置项之义[2]
+5. framing 对问题边界、目标函数、评价口径和叙事角度的框定；很多争论的差异不在事实，而在问题被如何 frame
 
 这些词的问题不在“洋气”，而在它们真的有区分度。把 fixture 全部改成“测试数据”会丢失含义，因为 fixture 可能是数据库连接、临时目录、mock server、依赖注入容器，或者一整套测试前置状态。把 wiring 全部改成“连接”也会变钝，因为 wiring 关心组件之间的依赖关系、调用路径和生命周期。
 
@@ -35,7 +39,10 @@ translationese 也不是一个玄学感受。PLOS One 2026 年那篇关于 LLM m
 
 按鸭哥的 taxonomy，主干问题大致可以分成四类：
 
-物理动作写思考：“接住”、击穿、打穿、锋利、不崩、不爆 把理解、论证、状态变化说成物理动作 形容词抢跑：更锋利、更干净、逻辑很清晰、问题很直接 先替读者下判断，再用冒号引出内容 抽象名词主语 “工程上的现实更难看”一类句子 主语过虚，结论靠形容词兜住，事实没有展开 英文词直留 context、state、cache、claim 混在中文里（但部分很难找到最佳中文对照时，我其实非常倾向于中英混杂的方式，至少没有丢失信息量）；读者需要在中英文之间来回切换
+1. 物理动作写思考：“接住”、击穿、打穿、锋利、不崩、不爆 把理解、论证、状态变化说成物理动作
+2. 形容词抢跑：更锋利、更干净、逻辑很清晰、问题很直接 先替读者下判断，再用冒号引出内容
+3. 抽象名词主语 “工程上的现实更难看”一类句子 主语过虚，结论靠形容词兜住，事实没有展开
+4. 英文词直留 context、state、cache、claim 混在中文里（但部分很难找到最佳中文对照时，我其实非常倾向于中英混杂的方式，至少没有丢失信息量）；读者需要在中英文之间来回切换
 
 这四类抓住了翻译腔的主干，但放到 GPT/Codex 这类技术协作语境里，还需要补几类遗漏。
 
@@ -47,7 +54,14 @@ translationese 也不是一个玄学感受。PLOS One 2026 年那篇关于 LLM m
 
 因此，GPT 中文常见的别扭感，可以再整理成一张更贴近技术写作的表：
 
-我都接住 I caught all of them 收到了 / 记下了 / 采纳了；把理解、接收、回应误压成物理动作 更锋利的重构 a sharper refactoring 更准确 / 更有力 / 更少废话的改写 sharp；在英文里自然，中文里容易变成悬浮形容词 验证得更干净 cleaner validation 证得更清楚 / 副作用更少 / 检查范围更明确；clean 的技术语感被直搬过来 context 不崩 context does not break 上下文不乱 / 状态不失控；英文 break 的隐喻被保留 把根因钉死 nail down the cause 查清根因 / 确认根因 nail down 的“确定”义被物理化成“钉死”[5] 桥成一个服务 bridge into a service 封装成服务 / 接成服务层 / 抽成服务 ；bridge 和 into 的搭配被硬搬进中文 视觉记忆通常很胖 visual memory is heavy 占显存大 / 状态很重 / 保留成本高；heavy 被译成胖，但维度没有说明 这三块不一起收，问题会漏出来 collect/close them together; issues leak out 不统一纳入检查链路，就会反复遗漏；低 verbosity 把操作、对象、失败机制都压没了
+1. 我都接住 I caught all of them 收到了 / 记下了 / 采纳了；把理解、接收、回应误压成物理动作
+2. 更锋利的重构 a sharper refactoring 更准确 / 更有力 / 更少废话的改写 sharp；在英文里自然，中文里容易变成悬浮形容词
+3. 验证得更干净 cleaner validation 证得更清楚 / 副作用更少 / 检查范围更明确；clean 的技术语感被直搬过来
+4. context 不崩 context does not break 上下文不乱 / 状态不失控；英文 break 的隐喻被保留
+5. 把根因钉死 nail down the cause 查清根因 / 确认根因 nail down 的“确定”义被物理化成“钉死”[5]
+6. 桥成一个服务 bridge into a service 封装成服务 / 接成服务层 / 抽成服务 ；bridge 和 into 的搭配被硬搬进中文
+7. 视觉记忆通常很胖 visual memory is heavy 占显存大 / 状态很重 / 保留成本高；heavy 被译成胖，但维度没有说明
+8. 这三块不一起收，问题会漏出来 collect/close them together; issues leak out 不统一纳入检查链路，就会反复遗漏；低 verbosity 把操作、对象、失败机制都压没了
 
 这类表达往往不是错句，所以很难用校对规则直接拦掉。它们只是让中文变硬、变扁，像一段英文的影子。
 
@@ -157,4 +171,18 @@ OpenAI 在 2026 年 4 月的《Where the goblins came from》里复盘过这件�
 
 参考资料
 
-pytest 文档解释 fixture 是测试前提供可靠、可重复上下文的机制。https://docs.pytest.org/en/7.1.x/explanation/fixtures.htmlCambridge Dictionary 对 preset 的释义包括预先设置、预先安排，以及已经预先选择好的设置项。https://dictionary.cambridge.org/dictionary/english/preset鸭哥，《写作中的 AI 味是哪儿来的》，2026-04-18。文章把 AI 中文味道主要解释为翻译腔，并归纳为物理动作写思考、形容词抢跑、抽象名词主语、有中文译法却混英文四类套路。https://yage.ai/share/ai-chinese-translationese-20260418.htmlZhang S, Zhao C, Machine translationese of large language models: Dependency triplets, text classification, and SHAP analysis, PLOS One, 2026。论文用 dependency triplet features 和 16 个分类器区分人类翻译与 LLM 翻译，其中 SVM 平均 F1 为 0.93。https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0339769nail down 的词典义项包括查明、确定、敲定、钉牢。Cambridge 有 “nail down the cause” 例子；Merriam-Webster 有 “nail down the cause of our network problems”；Collins 的 English-Chinese 义项把 identify 译为“确定”，agree on 译为“达成”，attach 才译为“钉牢”。https://dictionary.cambridge.org/us/dictionary/english/nail-down ; https://www.merriam-webster.com/dictionary/nail%20down ; https://www.collinsdictionary.com/us/english-language-learning/nail-downOpenAI ChatGPT Release Notes, August 15, 2025, GPT-5 Updates，说明 GPT-5 默认 personality 被调得更 warm、更 familiar，并区分 warmth 与 sycophancy。https://help.openai.com/en/articles/6825453-chatgpt-release-notesOpenAI Model Spec, 2025-10-27, Use appropriate style 与 Be warm，要求 assistant clear、direct、professional、warm，同时避免 saccharine 或 therapy speak。https://model-spec.openai.com/2025-10-27OpenAI Help Center, Customizing Your ChatGPT Personality，说明 personality 影响 ChatGPT 的 style、tone 和 behavior，并列出 Efficient、Professional、Friendly 等风格。https://help.openai.com/en/articles/11899719-customizing-your-chatgpt-personalityOpenAI Cookbook, GPT-5 prompting guide，说明 GPT-5 引入 verbosity 参数来影响最终回答长度，并强调 GPT-5 对 verbosity、tone、tool calling behavior 的提示很敏感。https://developers.openai.com/cookbook/examples/gpt-5/gpt-5_prompting_guideOpenAI Model Spec, 2025-10-27, 关于 interactive setting 与 follow-up questions 的说明：互动场景中可询问问题是否解决或是否需要更多细节；清晰离散问题通常应直接回答，不应添加无用 follow-up。https://model-spec.openai.com/2025-10-27OpenAI, Where the goblins came from, 2026-04-29。文章复盘 GPT-5.1 后 creature metaphors 增长，并报告 goblin 与 gremlin 使用率在 GPT-5.1 后分别上升 175% 和 52%。https://openai.com/index/where-the-goblins-came-from/OpenAI, Where the goblins came from，说明 creature language 高度集中在 Nerdy personality：Nerdy 占 2.5% 的 ChatGPT responses，却贡献 66.7% 的 goblin mentions；相关 reward signal 对 creature-word outputs 的 positive uplift 为 76.2%。https://openai.com/index/where-the-goblins-came-from/OpenAI, Where the goblins came from，说明奖励只施加在 Nerdy 条件下并不保证风格只留在该条件中；当带有 lexical tic 的 rollout 进入 SFT 或 preference data，可能形成反馈环并迁移到其他场景。https://openai.com/index/where-the-goblins-came-from/OpenAI Cookbook, GPT-5 prompting guide，在 minimal reasoning 与 agentic workflow 部分强调持续更新、避免过早停止、完成任务和子任务。https://developers.openai.com/cookbook/examples/gpt-5/gpt-5_prompting_guide《笑傲江湖》书名常见说法认为语出《西游记》第九回渔夫《西江月》词句“得来烹煮味偏浓，笑傲江湖打哄”。这里按常见文本写作“味偏浓”，而不是“味甚浓”。“打哄/打閧/打𬮢”等字形与释义在不同整理中不完全一致，本文只取其渔夫自得其乐的语境。可参见相关词句整理与作品源流说明：https://shici.yw11.com/shici_54057_657.html ; https://www.hetubook.com/book2/49/index.html
+1. pytest 文档解释 fixture 是测试前提供可靠、可重复上下文的机制。https://docs.pytest.org/en/7.1.x/explanation/fixtures.html
+2. Cambridge Dictionary 对 preset 的释义包括预先设置、预先安排，以及已经预先选择好的设置项。https://dictionary.cambridge.org/dictionary/english/preset
+3. 鸭哥，《写作中的 AI 味是哪儿来的》，2026-04-18。文章把 AI 中文味道主要解释为翻译腔，并归纳为物理动作写思考、形容词抢跑、抽象名词主语、有中文译法却混英文四类套路。https://yage.ai/share/ai-chinese-translationese-20260418.html
+4. Zhang S, Zhao C, Machine translationese of large language models: Dependency triplets, text classification, and SHAP analysis, PLOS One, 2026。论文用 dependency triplet features 和 16 个分类器区分人类翻译与 LLM 翻译，其中 SVM 平均 F1 为 0.93。https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0339769
+5. nail down 的词典义项包括查明、确定、敲定、钉牢。Cambridge 有 “nail down the cause” 例子；Merriam-Webster 有 “nail down the cause of our network problems”；Collins 的 English-Chinese 义项把 identify 译为“确定”，agree on 译为“达成”，attach 才译为“钉牢”。https://dictionary.cambridge.org/us/dictionary/english/nail-down ; https://www.merriam-webster.com/dictionary/nail%20down ; https://www.collinsdictionary.com/us/english-language-learning/nail-down
+6. OpenAI ChatGPT Release Notes, August 15, 2025, GPT-5 Updates，说明 GPT-5 默认 personality 被调得更 warm、更 familiar，并区分 warmth 与 sycophancy。https://help.openai.com/en/articles/6825453-chatgpt-release-notes
+7. OpenAI Model Spec, 2025-10-27, Use appropriate style 与 Be warm，要求 assistant clear、direct、professional、warm，同时避免 saccharine 或 therapy speak。https://model-spec.openai.com/2025-10-27
+8. OpenAI Help Center, Customizing Your ChatGPT Personality，说明 personality 影响 ChatGPT 的 style、tone 和 behavior，并列出 Efficient、Professional、Friendly 等风格。https://help.openai.com/en/articles/11899719-customizing-your-chatgpt-personality
+9. OpenAI Cookbook, GPT-5 prompting guide，说明 GPT-5 引入 verbosity 参数来影响最终回答长度，并强调 GPT-5 对 verbosity、tone、tool calling behavior 的提示很敏感。https://developers.openai.com/cookbook/examples/gpt-5/gpt-5_prompting_guide
+10. OpenAI Model Spec, 2025-10-27, 关于 interactive setting 与 follow-up questions 的说明：互动场景中可询问问题是否解决或是否需要更多细节；清晰离散问题通常应直接回答，不应添加无用 follow-up。https://model-spec.openai.com/2025-10-27
+11. OpenAI, Where the goblins came from, 2026-04-29。文章复盘 GPT-5.1 后 creature metaphors 增长，并报告 goblin 与 gremlin 使用率在 GPT-5.1 后分别上升 175% 和 52%。https://openai.com/index/where-the-goblins-came-from/
+12. OpenAI, Where the goblins came from，说明 creature language 高度集中在 Nerdy personality：Nerdy 占 2.5% 的 ChatGPT responses，却贡献 66.7% 的 goblin mentions；相关 reward signal 对 creature-word outputs 的 positive uplift 为 76.2%。https://openai.com/index/where-the-goblins-came-from/
+13. OpenAI, Where the goblins came from，说明奖励只施加在 Nerdy 条件下并不保证风格只留在该条件中；当带有 lexical tic 的 rollout 进入 SFT 或 preference data，可能形成反馈环并迁移到其他场景。https://openai.com/index/where-the-goblins-came-from/
+14. OpenAI Cookbook, GPT-5 prompting guide，在 minimal reasoning 与 agentic workflow 部分强调持续更新、避免过早停止、完成任务和子任务。https://developers.openai.com/cookbook/examples/gpt-5/gpt-5_prompting_guide
+15. 《笑傲江湖》书名常见说法认为语出《西游记》第九回渔夫《西江月》词句“得来烹煮味偏浓，笑傲江湖打哄”。这里按常见文本写作“味偏浓”，而不是“味甚浓”。“打哄/打閧/打𬮢”等字形与释义在不同整理中不完全一致，本文只取其渔夫自得其乐的语境。可参见相关词句整理与作品源流说明：https://shici.yw11.com/shici_54057_657.html ; https://www.hetubook.com/book2/49/index.html
