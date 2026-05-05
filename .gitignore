@@ -5,5 +5,4 @@ linkvault.db
 .eggs/
 docs/
 logs/
-site/
 site-out/
