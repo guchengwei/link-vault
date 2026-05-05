@@ -14,6 +14,7 @@ from .site_index import build_homepage_index
 _CODE_FENCE_RE = re.compile(r"^```(?P<lang>[\w+-]*)\s*$")
 _IMAGE_RE = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]+)\)")
 _LINK_RE = re.compile(r"\[(?P<label>[^\]]+)\]\((?P<href>[^)]+)\)")
+_ORDERED_LIST_RE = re.compile(r"^\d+\.\s+(?P<item>.+)$")
 
 
 def _load_json(path: Path) -> dict:
@@ -68,6 +69,7 @@ def render_markdown_html(markdown: str) -> str:
     code_lang = ""
     in_code = False
     list_items: list[str] = []
+    list_kind: str | None = None
 
     def flush_paragraph() -> None:
         nonlocal paragraph
@@ -77,11 +79,13 @@ def render_markdown_html(markdown: str) -> str:
             paragraph = []
 
     def flush_list() -> None:
-        nonlocal list_items
+        nonlocal list_items, list_kind
         if list_items:
             items = "".join(f"<li>{_inline_html(item)}</li>" for item in list_items)
-            blocks.append(f"<ul>{items}</ul>")
+            tag = "ol" if list_kind == "ol" else "ul"
+            blocks.append(f"<{tag}>{items}</{tag}>")
             list_items = []
+            list_kind = None
 
     def flush_code() -> None:
         nonlocal code_lines, code_lang
@@ -129,7 +133,18 @@ def render_markdown_html(markdown: str) -> str:
             continue
         if line.startswith("- "):
             flush_paragraph()
+            if list_kind not in (None, "ul"):
+                flush_list()
+            list_kind = "ul"
             list_items.append(line[2:].strip())
+            continue
+        ordered_match = _ORDERED_LIST_RE.match(line)
+        if ordered_match:
+            flush_paragraph()
+            if list_kind not in (None, "ol"):
+                flush_list()
+            list_kind = "ol"
+            list_items.append(ordered_match.group("item").strip())
             continue
         if _IMAGE_RE.fullmatch(line.strip()):
             flush_paragraph()

@@ -51,6 +51,40 @@ def test_build_site_from_content_renders_bundle_pages_and_assets(tmp_path):
     assert (site_dir / "index.html").exists()
 
 
+def test_build_site_from_content_renders_ordered_lists(tmp_path):
+    from linkvault.site_builder import build_site_from_content
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+
+    item_dir = content_dir / "2026-04" / "web-ordered-example"
+    item_dir.mkdir(parents=True)
+
+    document = {
+        "title": "Ordered List Example",
+        "source_type": "web",
+        "source_url": "https://example.com/ordered",
+        "created_at": "2026-04-05T12:00:00Z",
+        "markdown": "# Ordered List Example\n\n参考资料\n\n1. 第一条\n2. 第二条\n3. 第三条\n",
+    }
+    publish = {
+        "published": True,
+        "public_url": "https://guchengwei.github.io/link-vault/d/web-ordered-example/",
+        "target": {
+            "site_path": "site/d/web-ordered-example/index.html",
+            "bundle_path": "content/2026-04/web-ordered-example",
+        },
+    }
+    (item_dir / "document.json").write_text(json.dumps(document), encoding="utf-8")
+    (item_dir / "publish.json").write_text(json.dumps(publish), encoding="utf-8")
+    (item_dir / "index.md").write_text(document["markdown"], encoding="utf-8")
+
+    build_site_from_content(content_dir=content_dir, site_dir=site_dir)
+
+    html = (site_dir / "d" / "web-ordered-example" / "index.html").read_text(encoding="utf-8")
+    assert "<ol><li>第一条</li><li>第二条</li><li>第三条</li></ol>" in html
+
+
 def test_build_site_from_content_renders_legacy_markdown_files(tmp_path):
     from linkvault.site_builder import build_site_from_content
 
