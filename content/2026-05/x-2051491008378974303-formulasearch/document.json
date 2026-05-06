@@ -79,12 +79,12 @@
       "likes": 806,
       "retweets": 149,
       "replies": 21,
-      "views": 192397
+      "views": 192426
     },
     "raw_source": "fxtwitter"
   },
   "lineage": {
-    "fetched_at": "2026-05-06T05:21:34Z",
+    "fetched_at": "2026-05-06T05:22:00Z",
     "connector": "x",
     "backend": "fxtwitter",
     "runtime_version": "0.1.0"
