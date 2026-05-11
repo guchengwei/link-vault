@@ -1,0 +1,33 @@
+{
+  "source_type": "bilibili",
+  "source_url": "https://www.bilibili.com/video/BV1DB546wEb8/?vd_source=c9e7a539968fe2c068de834c08aab366",
+  "canonical_url": "https://www.bilibili.com/video/BV1DB546wEb8",
+  "external_id": "BV1DB546wEb8",
+  "title": "比Openclaw更好！我发现了多Agent协作架构的版本答案！",
+  "author": "小天fotos",
+  "author_handle": "fotos",
+  "created_at": null,
+  "language": "zh",
+  "text": "今天为大家详细剖析\nAnthropic的 Managed Agents架构\n\n不是纸上谈兵，\n我自己已经搓出来了\n\n为什么要做解耦，怎么样协作\nSessionStore有什么意义\n本期视频含金量超高\n\n下期给大家解读FDE这个新职业\n本期是个引子",
+  "markdown": "# 比Openclaw更好！我发现了多Agent协作架构的版本答案！\n\n- Source: https://www.bilibili.com/video/BV1DB546wEb8\n- Author: 小天fotos\n\n今天为大家详细剖析\nAnthropic的 Managed Agents架构\n\n不是纸上谈兵，\n我自己已经搓出来了\n\n为什么要做解耦，怎么样协作\nSessionStore有什么意义\n本期视频含金量超高\n\n下期给大家解读FDE这个新职业\n本期是个引子\n",
+  "summary": null,
+  "tags": [],
+  "assets": [
+    {
+      "url": "http://i0.hdslb.com/bfs/archive/7febe90beb5e7439fff816f3b4cf8662049054a7.jpg",
+      "type": "image",
+      "local_path": "assets/image-01.jpg"
+    }
+  ],
+  "metadata": {
+    "platform": "bilibili",
+    "content_type": "application/json; charset=utf-8",
+    "kind": "video",
+    "duration": 686,
+    "view_count": 1049
+  },
+  "lineage": {
+    "connector": "bilibili",
+    "runtime_version": "0.1.0"
+  }
+}
