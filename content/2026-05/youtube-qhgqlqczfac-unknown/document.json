@@ -1,0 +1,31 @@
+{
+  "source_type": "youtube",
+  "source_url": "https://www.youtube.com/watch?v=QhGqLqCzFac",
+  "canonical_url": "https://www.youtube.com/watch?v=QhGqLqCzFac",
+  "external_id": "QhGqLqCzFac",
+  "title": "Stripe's John Collison on How Agentic Commerce Will Reshape the Internet | Odd Lots",
+  "author": "unknown",
+  "author_handle": "unknown",
+  "created_at": null,
+  "language": null,
+  "text": "The internet is made for shopping. For years, the main inputs for e-commerce transactions involved targeted ads, algorithmic recommendations, SEO, and lots o...",
+  "markdown": "# Stripe's John Collison on How Agentic Commerce Will Reshape the Internet | Odd Lots\n\n- Source: https://www.youtube.com/watch?v=QhGqLqCzFac\n- Author: unknown\n\nThe internet is made for shopping. For years, the main inputs for e-commerce transactions involved targeted ads, algorithmic recommendations, SEO, and lots o...\n",
+  "summary": null,
+  "tags": [],
+  "assets": [
+    {
+      "url": "https://i.ytimg.com/vi/QhGqLqCzFac/maxresdefault.jpg",
+      "type": "image",
+      "local_path": "assets/image-01.jpg"
+    }
+  ],
+  "metadata": {
+    "platform": "youtube",
+    "content_type": "text/html; charset=utf-8",
+    "has_transcript": false
+  },
+  "lineage": {
+    "connector": "youtube",
+    "runtime_version": "0.1.0"
+  }
+}
