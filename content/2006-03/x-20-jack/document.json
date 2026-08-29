@@ -19,17 +19,21 @@
     "screen_name": "jack",
     "display_name": "jack",
     "stats": {
-      "likes": 312581,
-      "retweets": 126866,
-      "replies": 17872,
+      "likes": 308231,
+      "retweets": 124742,
+      "replies": 18004,
       "views": null
     },
     "raw_source": "fxtwitter"
   },
   "lineage": {
-    "fetched_at": "2026-04-02T13:30:02Z",
+    "fetched_at": "2026-08-29T10:18:56Z",
     "connector": "x",
     "backend": "fxtwitter",
-    "runtime_version": "0.1.0"
-  }
+    "runtime_version": "0.2.0"
+  },
+  "capture_status": "complete",
+  "content_kinds": [
+    "text"
+  ]
 }
