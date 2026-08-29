@@ -1,6 +1,6 @@
 {
   "source_type": "x",
-  "source_url": "https://x.com/agintender/status/1991890344653570186?s=20",
+  "source_url": "https://x.com/agintender/status/1991890344653570186",
   "canonical_url": "https://x.com/agintender/status/1991890344653570186",
   "external_id": "1991890344653570186",
   "title": "到底是AI泡沫还是AI革命？ —— Q3FY26 英伟达财报的唱空观点集锦",
@@ -34,17 +34,22 @@
     "screen_name": "agintender",
     "display_name": "danny",
     "stats": {
-      "likes": 70,
-      "retweets": 17,
+      "likes": 75,
+      "retweets": 16,
       "replies": 12,
-      "views": 68781
+      "views": 75253
     },
     "raw_source": "fxtwitter"
   },
   "lineage": {
-    "fetched_at": "2026-04-13T11:18:05Z",
+    "fetched_at": "2026-08-29T10:25:32Z",
     "connector": "x",
     "backend": "fxtwitter",
-    "runtime_version": "0.1.0"
-  }
+    "runtime_version": "0.2.0"
+  },
+  "capture_status": "complete",
+  "content_kinds": [
+    "text",
+    "images"
+  ]
 }
