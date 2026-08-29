@@ -1,6 +1,6 @@
 {
   "source_type": "bilibili",
-  "source_url": "https://www.bilibili.com/video/BV1DB546wEb8",
+  "source_url": "https://b23.tv/BV1DB546wEb8",
   "canonical_url": "https://www.bilibili.com/video/BV1DB546wEb8",
   "external_id": "BV1DB546wEb8",
   "title": "比Openclaw更好！我发现了多Agent协作架构的版本答案！",
@@ -23,7 +23,7 @@
     "platform": "bilibili",
     "content_type": "application/json; charset=utf-8",
     "duration": 686,
-    "view_count": 70291,
+    "view_count": 70292,
     "has_transcript": false,
     "transcript_available": false,
     "cid": 38254151985

@@ -1,6 +1,6 @@
 {
-  "published": true,
-  "public_url": "https://guchengwei.github.io/link-vault/d/bilibili-bv1db546web8-fotos/",
+  "published": false,
+  "public_url": null,
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
@@ -8,5 +8,5 @@
     "branch": "main",
     "bundle_path": "content/2026-08/bilibili-bv1db546web8-fotos"
   },
-  "revision": "a66882ab8888edce0de4e49c304b089b55973f50"
+  "revision": null
 }
