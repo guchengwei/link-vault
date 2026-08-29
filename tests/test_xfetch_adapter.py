@@ -18,13 +18,13 @@ def publish_env(tmp_path):
         yield env
 
 
-def test_publish_bundle_rebuilds_site_for_local_target_repo(publish_env):
+def test_publish_bundle_delegates_to_xfetch(publish_env):
     repo_path = Path(publish_env["XFETCH_TARGET_REPO"])
     repo_path.mkdir(parents=True)
+    expected = {"ok": True, "public_url": "https://example.com/published"}
 
     with mock.patch("linkvault.xfetch_adapter.resolve_xfetch_cmd", return_value="xfetch"), \
-         mock.patch("linkvault.xfetch_adapter._run_json", return_value={"ok": True, "public_url": "https://example.com/published"}) as run_json, \
-         mock.patch("linkvault.xfetch_adapter.build_site_from_content", return_value=[repo_path / "site" / "index.html", repo_path / "site" / "d" / "x-1" / "index.html"]) as build_site:
+         mock.patch("linkvault.xfetch_adapter._run_json", return_value=expected) as run_json:
         payload = publish_bundle("/tmp/bundle")
 
     run_json.assert_called_once_with(
@@ -41,21 +41,4 @@ def test_publish_bundle_rebuilds_site_for_local_target_repo(publish_env):
             "--json",
         ]
     )
-    build_site.assert_called_once_with(content_dir=repo_path / "content", site_dir=repo_path / "site")
-    assert payload["site_build_root"] == str(repo_path / "site" / "index.html")
-
-
-def test_publish_bundle_skips_site_rebuild_for_nonlocal_target_repo():
-    env = {
-        "XFETCH_TARGET_REPO": "guchengwei/link-vault",
-        "XFETCH_REPO_OWNER": "guchengwei",
-        "XFETCH_REPO_NAME": "link-vault",
-    }
-    with mock.patch.dict(os.environ, env, clear=False), \
-         mock.patch("linkvault.xfetch_adapter.resolve_xfetch_cmd", return_value="xfetch"), \
-         mock.patch("linkvault.xfetch_adapter._run_json", return_value={"ok": True, "public_url": "https://example.com/published"}), \
-         mock.patch("linkvault.xfetch_adapter.build_site_from_content") as build_site:
-        payload = publish_bundle("/tmp/bundle")
-
-    build_site.assert_not_called()
-    assert "site_build_root" not in payload
+    assert payload == expected

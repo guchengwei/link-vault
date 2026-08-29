@@ -9,7 +9,6 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .site_builder import build_site_from_content
 from .vectordb import infer_source_type
 
 
@@ -77,17 +76,6 @@ def ingest_url(url: str, content_root: Optional[str] = None) -> Dict[str, Any]:
     return payload
 
 
-def _rebuild_target_repo_site(target_repo: str) -> Optional[str]:
-    repo_path = Path(target_repo).expanduser()
-    if not repo_path.exists() or not repo_path.is_dir():
-        return None
-    output_paths = build_site_from_content(content_dir=repo_path / "content", site_dir=repo_path / "site")
-    homepage = next((path for path in output_paths if path.name == "index.html" and path.parent == repo_path / "site"), None)
-    if homepage:
-        return str(homepage)
-    return str(output_paths[0]) if output_paths else None
-
-
 def publish_bundle(bundle_path: str) -> Dict[str, Any]:
     target_repo = os.environ.get("XFETCH_TARGET_REPO") or os.environ.get("LINKVAULT_XFETCH_TARGET_REPO")
     repo_owner = os.environ.get("XFETCH_REPO_OWNER") or os.environ.get("LINKVAULT_XFETCH_REPO_OWNER")
@@ -104,11 +92,7 @@ def publish_bundle(bundle_path: str) -> Dict[str, Any]:
         "--repo-name", repo_name,
         "--json",
     ]
-    payload = _run_json(cmd)
-    site_build_root = _rebuild_target_repo_site(target_repo)
-    if site_build_root:
-        payload.setdefault("site_build_root", site_build_root)
-    return payload
+    return _run_json(cmd)
 
 
 def load_bundle(bundle_path: str) -> Dict[str, Any]:
