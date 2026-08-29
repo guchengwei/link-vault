@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-08-29T10:26:34Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/youtube-qhgqlqczfac-unknown/",
+  "content_revision": "f0d30e08b28e51c891bab1a68bcd4f1426cc230c",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2026-08/youtube-qhgqlqczfac-unknown"
-  },
-  "revision": "f0d30e08b28e51c891bab1a68bcd4f1426cc230c"
+    "branch": "main"
+  }
 }
