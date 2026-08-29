@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-08-29T10:26:07Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/web-8bd3bca01439-boristane-com/",
+  "content_revision": "f517768dd0df4d6603ccd49d2665c8c347c5cd0c",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2026-08/web-8bd3bca01439-boristane-com"
-  },
-  "revision": "f517768dd0df4d6603ccd49d2665c8c347c5cd0c"
+    "branch": "main"
+  }
 }
