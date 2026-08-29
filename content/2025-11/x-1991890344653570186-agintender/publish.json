@@ -1,6 +1,6 @@
 {
-  "published": false,
-  "public_url": null,
+  "published": true,
+  "public_url": "https://guchengwei.github.io/link-vault/d/x-1991890344653570186-agintender/",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
@@ -8,5 +8,5 @@
     "branch": "main",
     "bundle_path": "content/2025-11/x-1991890344653570186-agintender"
   },
-  "revision": null
+  "revision": "ae0d2fc4dab0cf991a3bdc84206e532f4111ef9d"
 }
