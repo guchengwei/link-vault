@@ -30,7 +30,13 @@ def _inline_html(text: str) -> str:
 
 def _normalize_source_prefix(value: str) -> str:
     value = (value or "web").strip().lower()
-    return {"webpage": "web", "tweet": "tweets", "article": "web"}.get(value, value)
+    return {
+        "webpage": "web",
+        "article": "web",
+        "tweet": "x",
+        "tweets": "x",
+        "twitter": "x",
+    }.get(value, value)
 
 
 def _parse_legacy_markdown(path: Path) -> tuple[dict, str] | None:
@@ -59,6 +65,18 @@ def _legacy_site_path(markdown_path: Path, metadata: dict, site_root: Path) -> t
     prefix = _normalize_source_prefix(metadata.get("source_type") or markdown_path.parts[1] if len(markdown_path.parts) > 1 else "web")
     slug = f"{prefix}-{digest}-{host}"
     return site_root / "d" / slug / "index.html", slug
+
+
+def _published_site_path(site_root: Path, site_path_value: str, slug: str) -> Path:
+    if not site_path_value:
+        return site_root / "d" / slug / "index.html"
+
+    configured = Path(site_path_value)
+    if configured.is_absolute():
+        return configured
+    if configured.parts and configured.parts[0] == "site":
+        configured = Path(*configured.parts[1:])
+    return site_root / configured
 
 
 def render_markdown_html(markdown: str) -> str:
@@ -183,31 +201,29 @@ def _render_page(document: dict, public_url: str, body_html: str) -> str:
   <title>{escape(title)}</title>
   {canonical}
   <style>
-    :root {{ color-scheme: light dark; }}
+    :root {{ color-scheme: dark; }}
     * {{ box-sizing: border-box; }}
-    body {{ font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; background: #f5f5f7; color: #111; }}
-    main {{ max-width: 820px; margin: 0 auto; padding: 2rem 1rem 4rem; }}
-    .shell {{ background: #fff; border: 1px solid #ddd; border-radius: 16px; padding: 1.25rem; }}
-    .back {{ display: inline-block; margin-bottom: 1rem; color: inherit; }}
-    h1 {{ margin: 0 0 0.5rem; line-height: 1.2; }}
-    .meta {{ color: #666; margin-bottom: 1.25rem; }}
-    article {{ line-height: 1.7; }}
-    article img {{ max-width: 100%; border-radius: 12px; display: block; margin: 1rem 0; }}
-    article pre {{ overflow-x: auto; padding: 0.9rem; border-radius: 12px; background: #111214; color: #f5f5f7; }}
+    body {{ font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans CJK SC", "Noto Sans JP", sans-serif; margin: 0; background: #182219; color: #272017; }}
+    main {{ max-width: 900px; margin: 0 auto; padding: 2rem 1rem 5rem; }}
+    .shell {{ background: #f0e7d4; border: 1px solid rgba(214, 166, 58, .6); border-radius: 14px; padding: clamp(1.25rem, 4vw, 3.25rem); box-shadow: 0 18px 48px rgba(5, 12, 6, .28); }}
+    .back {{ display: inline-flex; margin-bottom: 1.5rem; color: #2f716b; font-weight: 700; text-decoration: none; }}
+    .back:hover {{ text-decoration: underline; }}
+    h1 {{ margin: 0 0 0.65rem; font-family: Georgia, "Noto Serif CJK SC", "Noto Serif JP", ui-serif, serif; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.12; letter-spacing: -.025em; }}
+    .meta {{ color: #675c4c; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(77, 58, 32, .18); }}
+    .meta a {{ color: #2f716b; }}
+    article {{ line-height: 1.75; font-size: 1.05rem; }}
+    article h2, article h3 {{ font-family: Georgia, "Noto Serif CJK SC", "Noto Serif JP", ui-serif, serif; line-height: 1.25; }}
+    article img {{ max-width: 100%; height: auto; border-radius: 10px; display: block; margin: 1.5rem auto; border: 1px solid rgba(77, 58, 32, .16); }}
+    article pre {{ overflow-x: auto; padding: 1rem; border-radius: 10px; background: #202a20; color: #fff7e5; }}
     article code {{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
     article p, article ul {{ margin: 0 0 1rem; }}
-    article a {{ color: inherit; }}
-    @media (prefers-color-scheme: dark) {{
-      body {{ background: #111214; color: #f5f5f7; }}
-      .shell {{ background: #18191c; border-color: #34363b; }}
-      .meta {{ color: #a7acb5; }}
-    }}
+    article a {{ color: #2f716b; }}
   </style>
 </head>
 <body>
   <main>
     <div class=\"shell\">
-      <a class=\"back\" href=\"/link-vault/\">← link-vault</a>
+      <a class=\"back\" href=\"../../\">← link-vault</a>
       <h1>{escape(title)}</h1>
       <div class=\"meta\">{meta_html}</div>
       <article>
@@ -236,11 +252,8 @@ def build_site_from_content(content_dir: Path | str = "content", site_dir: Path 
         document = _load_json(document_path)
         markdown = document.get("markdown") or publish_path.with_name("index.md").read_text(encoding="utf-8")
 
-        site_path_value = publish.get("target", {}).get("site_path")
-        if site_path_value:
-            site_page = site_root.parent / site_path_value if not Path(site_path_value).is_absolute() else Path(site_path_value)
-        else:
-            site_page = site_root / "d" / publish_path.parent.name / "index.html"
+        site_path_value = publish.get("target", {}).get("site_path") or ""
+        site_page = _published_site_path(site_root, site_path_value, publish_path.parent.name)
         site_page.parent.mkdir(parents=True, exist_ok=True)
 
         bundle_dir = publish_path.parent
