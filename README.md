@@ -4,7 +4,7 @@ A visual archive for saved links — not a knowledge base.
 
 **[Open the bookmark archive →](https://guchengwei.github.io/link-vault/)**
 
-![Link Vault Earthy Archive bookmark grid](docs/images/link-vault-earthy-archive.jpg)
+![Link Vault Earthy Archive concept](docs/images/link-vault-earthy-archive.png)
 
 `link-vault` turns captured web content into a fast, static bookmark site. Save a URL, keep a readable local copy, and browse the collection by source, date, or search.
 
