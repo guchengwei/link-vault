@@ -184,8 +184,9 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
     content_path = Path(content_dir)
     items: list[PublishedItem] = []
     seen_public_urls: set[str] = set()
+    seen_page_paths: set[Path] = set()
 
-    for publish_path in content_path.glob("**/publish.json"):
+    for publish_path in sorted(content_path.glob("**/publish.json"), reverse=True):
         publish = _load_json(publish_path)
         if not publish.get("published"):
             continue
@@ -199,6 +200,8 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
         target = publish.get("target", {})
         slug = publish_path.parent.name
         page_path = _relative_site_page(target.get("site_path") or "", slug)
+        if page_path in seen_page_paths:
+            continue
         card = document.get("card") if isinstance(document.get("card"), dict) else {}
         markdown_path = publish_path.with_name("index.md")
         markdown = document.get("markdown") or (
@@ -220,6 +223,7 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
                 domain=urlparse(source_url).netloc.removeprefix("www."),
             )
         )
+        seen_page_paths.add(page_path)
         if public_url:
             seen_public_urls.add(public_url)
 

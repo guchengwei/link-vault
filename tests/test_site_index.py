@@ -108,6 +108,43 @@ def test_homepage_payload_contains_all_sources_newest_first(tmp_path):
     assert {record["source"] for record in records} == {"x", "web"}
 
 
+def test_homepage_deduplicates_bundles_that_publish_to_the_same_page(tmp_path):
+    from linkvault.site_index import build_homepage_index
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+    public_url = "https://guchengwei.github.io/link-vault/d/web-example/"
+
+    _write_bundle(
+        content_dir,
+        "2026-04",
+        "web-example",
+        {
+            "title": "Older capture",
+            "source_type": "web",
+            "source_url": "https://example.com/article",
+            "created_at": "2026-04-01T00:00:00Z",
+        },
+        public_url,
+    )
+    _write_bundle(
+        content_dir,
+        "2026-08",
+        "web-example",
+        {
+            "title": "Newer capture",
+            "source_type": "web",
+            "source_url": "https://example.com/article",
+            "created_at": "2026-08-01T00:00:00Z",
+        },
+        public_url,
+    )
+
+    records = _payload(build_homepage_index(content_dir=content_dir, site_dir=site_dir).read_text(encoding="utf-8"))
+
+    assert [record["title"] for record in records] == ["Newer capture"]
+
+
 def test_card_contract_overrides_fallback_title_opening_and_image(tmp_path):
     from linkvault.site_index import build_homepage_index
 
