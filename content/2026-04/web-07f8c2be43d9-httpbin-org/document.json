@@ -3,7 +3,11 @@
   "source_url": "https://httpbin.org/html",
   "canonical_url": "https://httpbin.org/html",
   "external_id": "07f8c2be43d9",
-  "title": "html",
+  "title": "Herman Melville — Moby-Dick excerpt",
+  "card": {
+    "title": "Herman Melville — Moby-Dick excerpt",
+    "opening": "A passage about Perth, the Pequod’s patient blacksmith, from Herman Melville’s Moby-Dick."
+  },
   "author": "httpbin.org",
   "author_handle": "httpbin.org",
   "created_at": null,

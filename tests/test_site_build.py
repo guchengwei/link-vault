@@ -51,6 +51,37 @@ def test_build_site_from_content_renders_bundle_pages_and_assets(tmp_path):
     assert (site_dir / "index.html").exists()
 
 
+def test_build_site_prefers_curated_index_markdown(tmp_path):
+    from linkvault.site_builder import build_site_from_content
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "site"
+    item_dir = content_dir / "2026-04" / "web-curated"
+    item_dir.mkdir(parents=True)
+    (item_dir / "document.json").write_text(
+        json.dumps(
+            {
+                "title": "Curated article",
+                "source_type": "web",
+                "source_url": "https://example.com/curated",
+                "markdown": "# Noisy capture\n\nNavigation and ads.",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (item_dir / "index.md").write_text("# Curated article\n\nClean article body.", encoding="utf-8")
+    (item_dir / "publish.json").write_text(
+        json.dumps({"published": True, "target": {"site_path": "site/d/web-curated/index.html"}}),
+        encoding="utf-8",
+    )
+
+    build_site_from_content(content_dir=content_dir, site_dir=site_dir)
+
+    html = (site_dir / "d" / "web-curated" / "index.html").read_text(encoding="utf-8")
+    assert "Clean article body." in html
+    assert "Navigation and ads." not in html
+
+
 def test_build_site_from_content_renders_ordered_lists(tmp_path):
     from linkvault.site_builder import build_site_from_content
 

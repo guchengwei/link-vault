@@ -2,6 +2,7 @@
   "use strict";
 
   const bookmarks = Array.isArray(window.BOOKMARKS) ? window.BOOKMARKS : [];
+  const shuffledBookmarks = shuffle(bookmarks);
   const sourceOrder = ["x", "web", "bilibili", "youtube", "wechat"];
   const sourceLabels = {
     all: "All",
@@ -33,6 +34,7 @@
     summary: document.querySelector("#results-summary"),
     total: document.querySelector("#total-count"),
     clear: document.querySelector("#clear-search"),
+    sort: document.querySelector("#sort-toggle"),
     empty: document.querySelector("#empty-state"),
     reset: document.querySelector("#reset-filters"),
     views: [...document.querySelectorAll("[data-view]")],
@@ -42,8 +44,18 @@
   const state = {
     query: "",
     source: "all",
+    sort: "random",
     view: storedView === "list" ? "list" : "grid",
   };
+
+  function shuffle(items) {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const target = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
+    }
+    return shuffled;
+  }
 
   function normalize(value) {
     return String(value || "").normalize("NFKC").toLocaleLowerCase();
@@ -164,18 +176,28 @@
   }
 
   function renderBookmarks() {
-    const filtered = bookmarks.filter(matches);
+    const ordered = state.sort === "timeline" ? bookmarks : shuffledBookmarks;
+    const filtered = ordered.filter(matches);
     elements.grid.replaceChildren(...filtered.map(createCard));
     elements.grid.classList.toggle("is-list", state.view === "list");
     elements.empty.hidden = filtered.length !== 0;
     elements.grid.hidden = filtered.length === 0;
 
     const scope = state.source === "all" ? "bookmarks" : `${sourceLabels[state.source] || state.source} bookmarks`;
-    elements.summary.textContent = state.query
+    const resultLabel = state.query
       ? `${filtered.length} ${scope} matching “${elements.search.value.trim()}”`
-      : `${filtered.length} ${scope}, newest first`;
+      : `${filtered.length} ${scope}`;
+    elements.summary.textContent = `${resultLabel}, ${state.sort === "timeline" ? "newest first" : "shuffled"}`;
     elements.total.textContent = `${bookmarks.length} bookmarks`;
     elements.clear.hidden = !state.query;
+  }
+
+  function toggleSort() {
+    const timeline = state.sort !== "timeline";
+    state.sort = timeline ? "timeline" : "random";
+    elements.sort.textContent = timeline ? "Shuffle" : "Timeline";
+    elements.sort.setAttribute("aria-pressed", timeline ? "true" : "false");
+    renderBookmarks();
   }
 
   function setView(view) {
@@ -203,6 +225,7 @@
     renderBookmarks();
   });
   elements.clear.addEventListener("click", reset);
+  elements.sort.addEventListener("click", toggleSort);
   elements.reset.addEventListener("click", reset);
   elements.views.forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
   document.addEventListener("keydown", (event) => {
@@ -221,4 +244,3 @@
   renderFilters();
   setView(state.view);
 })();
-

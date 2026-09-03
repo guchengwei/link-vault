@@ -1,13 +1,13 @@
 ---
 url: "https://cj.sina.com.cn/articles/view/7294209083/1b2c4cc3b00101ob7i?froms=ggmp&"
 source_type: webpage
-title: "2024到2025，《晚点》与闫俊杰的两次访谈，记录一条纯草根AI创业之路__财经头条__新浪财经"
+title: "2024 到 2025：《晚点》与闫俊杰的两次访谈——一条纯草根 AI 创业之路"
 author: ""
 fetched_at: "2026-03-08T05:46:15.173027Z"
 final_url: "https://cj.sina.com.cn/articles/view/7294209083/1b2c4cc3b00101ob7i?froms=ggmp&"
 ---
 
-# 2024到2025，《晚点》与闫俊杰的两次访谈，记录一条纯草根AI创业之路__财经头条__新浪财经
+# 2024 到 2025：《晚点》与闫俊杰的两次访谈——一条纯草根 AI 创业之路
 
 来找找相同和不同吧。
 本文首发于 2024 年 04 月 17 日，2025 年 01 月 17 日。

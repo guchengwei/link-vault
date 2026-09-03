@@ -185,6 +185,7 @@ input:focus-visible {
 
 .filter-button,
 .icon-button,
+.sort-button,
 .clear-button,
 .empty-state button {
   color: var(--cream);
@@ -298,6 +299,25 @@ main {
 
 .results-bar p {
   margin: 0;
+}
+
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-button {
+  padding: 0.32rem 0.65rem;
+  border-radius: 6px;
+  color: var(--cream);
+}
+
+.sort-button:hover,
+.sort-button[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--mustard);
+  border-color: var(--mustard);
 }
 
 .clear-button {
@@ -675,4 +695,3 @@ main {
     transition-duration: 0.01ms !important;
   }
 }
-

@@ -204,8 +204,10 @@ def collect_published_items(content_dir: Path | str) -> list[PublishedItem]:
             continue
         card = document.get("card") if isinstance(document.get("card"), dict) else {}
         markdown_path = publish_path.with_name("index.md")
-        markdown = document.get("markdown") or (
-            markdown_path.read_text(encoding="utf-8") if markdown_path.exists() else ""
+        markdown = (
+            markdown_path.read_text(encoding="utf-8")
+            if markdown_path.exists()
+            else document.get("markdown") or ""
         )
 
         items.append(
@@ -315,8 +317,11 @@ def render_homepage_index(items: Iterable[PublishedItem], title: str = "link-vau
   </header>
   <main id="bookmarks" tabindex="-1">
     <div class="results-bar">
-      <p id="results-summary">{len(item_list)} bookmarks, newest first</p>
-      <button class="clear-button" id="clear-search" type="button" hidden>Clear search</button>
+      <p id="results-summary">{len(item_list)} bookmarks, shuffled</p>
+      <div class="results-actions">
+        <button class="sort-button" id="sort-toggle" type="button" aria-pressed="false">Timeline</button>
+        <button class="clear-button" id="clear-search" type="button" hidden>Clear search</button>
+      </div>
     </div>
     <section class="bookmark-grid" id="bookmark-grid" aria-label="Saved bookmarks"></section>
     <div class="empty-state" id="empty-state" hidden>

@@ -1,4 +1,4 @@
-# How I Use Claude Code | Boris TaneHow I Use Claude Code | Boris Tane
+# How I Use Claude Code
 
 - Source: https://boristane.com/blog/how-i-use-claude-code/
 - Author: boristane.com

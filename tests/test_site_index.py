@@ -204,3 +204,14 @@ def test_build_homepage_index_includes_legacy_markdown_items(tmp_path):
     assert record["date"] == "2026-03-16"
     assert record["url"].startswith("d/x-")
     assert "Legacy tweet body." in record["excerpt"]
+
+
+def test_homepage_defaults_to_shuffled_order_with_timeline_toggle(tmp_path):
+    from linkvault.site_index import build_homepage_index
+
+    output = build_homepage_index(content_dir=tmp_path / "content", site_dir=tmp_path / "site")
+    html = output.read_text(encoding="utf-8")
+
+    assert 'id="results-summary">0 bookmarks, shuffled' in html
+    assert 'id="sort-toggle"' in html
+    assert 'aria-pressed="false">Timeline</button>' in html

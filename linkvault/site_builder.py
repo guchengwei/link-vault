@@ -250,7 +250,12 @@ def build_site_from_content(content_dir: Path | str = "content", site_dir: Path 
         if not document_path.exists():
             continue
         document = _load_json(document_path)
-        markdown = document.get("markdown") or publish_path.with_name("index.md").read_text(encoding="utf-8")
+        markdown_path = publish_path.with_name("index.md")
+        markdown = (
+            markdown_path.read_text(encoding="utf-8")
+            if markdown_path.exists()
+            else document.get("markdown") or ""
+        )
 
         site_path_value = publish.get("target", {}).get("site_path") or ""
         site_page = _published_site_path(site_root, site_path_value, publish_path.parent.name)

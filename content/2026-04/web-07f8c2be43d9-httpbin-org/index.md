@@ -1,4 +1,4 @@
-# html
+# Herman Melville — Moby-Dick excerpt
 
 - Source: https://httpbin.org/html
 - Author: httpbin.org
