@@ -85,6 +85,32 @@ def test_build_site_from_content_renders_ordered_lists(tmp_path):
     assert "<ol><li>第一条</li><li>第二条</li><li>第三条</li></ol>" in html
 
 
+def test_build_site_honors_custom_output_directory(tmp_path):
+    from linkvault.site_builder import build_site_from_content
+
+    content_dir = tmp_path / "content"
+    site_dir = tmp_path / "dist"
+    item_dir = content_dir / "2026-04" / "web-custom-output"
+    item_dir.mkdir(parents=True)
+    document = {
+        "title": "Custom output",
+        "source_type": "web",
+        "source_url": "https://example.com/custom",
+        "markdown": "Custom output body.",
+    }
+    publish = {
+        "published": True,
+        "public_url": "https://example.com/d/web-custom-output/",
+        "target": {"site_path": "site/d/web-custom-output/index.html"},
+    }
+    (item_dir / "document.json").write_text(json.dumps(document), encoding="utf-8")
+    (item_dir / "publish.json").write_text(json.dumps(publish), encoding="utf-8")
+
+    build_site_from_content(content_dir=content_dir, site_dir=site_dir)
+
+    assert (site_dir / "d" / "web-custom-output" / "index.html").is_file()
+
+
 def test_build_site_from_content_renders_legacy_markdown_files(tmp_path):
     from linkvault.site_builder import build_site_from_content
 

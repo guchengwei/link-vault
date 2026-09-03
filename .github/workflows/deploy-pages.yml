@@ -7,6 +7,7 @@ on:
       - 'content/**'
       - 'linkvault/site_builder.py'
       - 'linkvault/site_index.py'
+      - 'linkvault/site_assets/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
