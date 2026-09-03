@@ -1,148 +1,111 @@
-# link-vault
+# link/vault
 
-xfetch-backed link ingestion and local semantic search.
+A visual archive for saved links — not a knowledge base.
 
-link-vault now treats `xfetch` as the canonical runtime for ingest, bundle creation, and publish metadata. It indexes local xfetch bundle content, primarily `index.md`, into a local SQLite vector database for semantic search.
+**[Open the bookmark archive →](https://guchengwei.github.io/link-vault/)**
 
-## What it does
+![Link Vault Earthy Archive bookmark grid](docs/images/link-vault-earthy-archive.jpg)
 
-- ingest URLs through xfetch
-- publish saved bundles automatically through xfetch's configured target workflow
-- allow partial success when local ingest succeeds but publish fails
-- index local bundle markdown for semantic search
-- keep local document metadata, bundle paths, and publish status in SQLite
-- treat semantic indexing as best-effort so missing local ML deps do not break save/publish
+`link-vault` turns captured web content into a fast, static bookmark site. Save a URL, keep a readable local copy, and browse the collection by source, date, or search.
 
-## Quickstart
+## The bookmark experience
+
+- visual masonry grid with captured images and readable text fallbacks
+- instant search across titles, summaries, authors, and domains
+- source filters for X, web pages, Bilibili, YouTube, and WeChat
+- grid and compact list views
+- local detail pages for every saved item
+- responsive layout with no runtime backend
+
+## Save a link
+
+Use `xfetch` as the canonical capture and publish pipeline:
+
+```bash
+python3 -m xfetch save "https://example.com/article" \
+  --content-root ./content-out \
+  --json
+```
+
+With a publish target configured:
+
+```bash
+export XFETCH_TARGET_REPO=/path/to/link-vault
+export XFETCH_REPO_OWNER=guchengwei
+export XFETCH_REPO_NAME=link-vault
+
+python3 -m xfetch save "https://example.com/article" \
+  --content-root ./content-out \
+  --json
+```
+
+## Publishing flow
+
+```text
+URL → xfetch capture → content bundle → Link Vault renderer → GitHub Pages
+```
+
+`xfetch` owns capture, bundle creation, and sync. This repository owns the public archive renderer and the saved content it publishes. GitHub Pages serves the generated `site/` output.
+
+Each bundle contains:
+
+- `document.json` — source, author, timestamps, publish metadata, and optional card fields
+- `index.md` — the readable captured content
+- images and other captured media when available
+
+## Better bookmark cards
+
+The renderer accepts optional presentation metadata without requiring it:
+
+```json
+{
+  "card": {
+    "title": "A concise, durable title",
+    "opening": "One useful sentence that explains why this link matters.",
+    "image": "images/cover.jpg",
+    "diagram": "images/diagram.png"
+  }
+}
+```
+
+The card can use a generated front image, a useful diagram, or a strong opening phrase. Existing bundles continue to work: Link Vault falls back to captured images and extracted text.
+
+## Local tools
+
+The repository still supports local CLI bookkeeping and semantic search when useful, but those are secondary to the bookmark site:
 
 ```bash
 python -m linkvault ingest https://example.com/article
-python -m linkvault ingest https://example.com/article https://example.com/post
 python -m linkvault search "machine learning"
 python -m linkvault list
 python -m linkvault stats
 ```
 
-## /save behavior
-
-Canonical save path for Hermes and other callers:
+Build the static archive locally:
 
 ```bash
-cd /Users/zion/xfetch
-python3 -m xfetch save "<url>" \
-  --content-root /Users/zion/xfetch/content-out \
-  --json
+python -m linkvault.site_builder
+python -m http.server 8000 --directory site
 ```
 
-With env-configured publish target:
-
-```bash
-export XFETCH_TARGET_REPO='/Users/zion/link-vault-publish'
-export XFETCH_REPO_OWNER='guchengwei'
-export XFETCH_REPO_NAME='link-vault'
-python3 -m xfetch save "<url>" --content-root /Users/zion/xfetch/content-out --json
-```
-
-If link-vault is used as the wrapper for local semantic indexing/bookkeeping, run:
-
-```bash
-cd /home/nvidia/.openclaw/workspace/link-vault && python3 -m linkvault --db /home/nvidia/.openclaw/workspace/link-vault/linkvault.db --content-dir /home/nvidia/.openclaw/workspace/link-vault/content --json ingest "<url>"
-```
-
-Response semantics:
-
-- `Saved + published: <title> -> <public_url>`
-- `Saved locally, publish failed: <title> -> <publish_error>`
-- `Save failed: <url> -> <error>`
-- when JSON output is used, indexing failures are reported separately via `index_status` and `index_error` and should not be treated as save failure if publish succeeded
-
-## Architecture
-
-```text
-Any URL -> xfetch ingest -> local bundle (document.json + index.md + publish metadata)
-                        -> xfetch publish
-                        -> link-vault indexes index.md into SQLite vectors
-```
-
-### Canonical responsibilities
-
-- `xfetch` owns ingest
-- `xfetch` owns local bundle creation
-- `xfetch` owns render output and publish metadata
-- `xfetch` owns sync/publish into the target content repo
-- `link-vault` owns local semantic indexing and search over saved bundles
-
-## Publish target
-
-Publish follows xfetch settings and is intended to target:
-
-- repo: `guchengwei/link-vault`
-- serving model: GitHub Pages from that repo
-
-link-vault should not invent a separate publish destination.
-
-## Search model
-
-- primary indexed body: bundle `index.md`
-- document metadata source: bundle `document.json`
-- stored metadata: local bundle path, index path, public URL, publish status
-
-## Current repository shape
-
-```text
-link-vault/
-├── linkvault/
-│   ├── cli.py
-│   ├── mcp_server.py
-│   ├── vectordb.py
-│   └── xfetch_adapter.py
-├── tests/
-│   ├── fixtures/xfetch/
-│   ├── test_smoke.py
-│   └── test_mcp_tools.py
-└── README.md
-```
+Then open <http://localhost:8000>.
 
 ## Environment
 
-The xfetch CLI must be available on PATH, or configured via one of:
+`xfetch` must be available on `PATH`, or configured with `XFETCH_CMD` or `LINKVAULT_XFETCH_CMD`.
 
-- `XFETCH_CMD`
-- `LINKVAULT_XFETCH_CMD`
-
-For publish to work end to end, configure:
+Publishing uses:
 
 - `XFETCH_TARGET_REPO`
 - `XFETCH_REPO_OWNER`
 - `XFETCH_REPO_NAME`
 
-Optional xfetch save defaults:
+Optional defaults:
 
 - `XFETCH_BRANCH`
 - `XFETCH_CONTENT_SUBDIR`
 - `XFETCH_SITE_SUBDIR`
 
-Example:
+## Live site
 
-```bash
-export XFETCH_CMD='python3 -m xfetch'
-export XFETCH_TARGET_REPO='/home/nvidia/.openclaw/workspace/link-vault-publish'
-export XFETCH_REPO_OWNER='guchengwei'
-export XFETCH_REPO_NAME='link-vault'
-```
-
-## Validation
-
-Validated with a real end-to-end run after installing xfetch locally:
-
-- local ingest through xfetch
-- local indexing of bundle `index.md`
-- real publish to `guchengwei/link-vault`
-- resulting public URL, for example:
-  - <https://guchengwei.github.io/link-vault/d/web-ef3f409f8927-example-com/>
-
-## Notes
-
-- old fetch/storage pipeline components should be removed from active runtime use
-- old weekly push scripts are obsolete once publish happens during ingest
-- transcription remains a separate review area until xfetch capability is confirmed
+<https://guchengwei.github.io/link-vault/>
