@@ -14,18 +14,40 @@ from .site_index import build_homepage_index
 _CODE_FENCE_RE = re.compile(r"^```(?P<lang>[\w+-]*)\s*$")
 _IMAGE_RE = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]+)\)")
 _LINK_RE = re.compile(r"\[(?P<label>[^\]]+)\]\((?P<href>[^)]+)\)")
-_ORDERED_LIST_RE = re.compile(r"^\d+\.\s+(?P<item>.+)$")
+_ORDERED_LIST_RE = re.compile(r"^(?P<number>\d+)\.\s+(?P<item>.+)$")
 
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+_INLINE_RE = re.compile(
+    r"(?P<image>!)?\[(?P<label>[^\]]*)\]\((?P<url>[^)]+)\)"
+    r"|`(?P<code>[^`]+)`|\*\*(?P<strong>.+?)\*\*|\*(?P<em>[^*]+)\*"
+)
+
+
 def _inline_html(text: str) -> str:
-    escaped = escape(text)
-    escaped = _LINK_RE.sub(lambda m: f'<a href="{escape(m.group("href"), quote=True)}">{escape(m.group("label"))}</a>', escaped)
-    escaped = _IMAGE_RE.sub(lambda m: f'<img src="{escape(m.group("src"), quote=True)}" alt="{escape(m.group("alt"))}" loading="lazy">', escaped)
-    return escaped
+    # Tokenize once: generated tags must never be parsed again as Markdown.
+    output = []
+    cursor = 0
+    for match in _INLINE_RE.finditer(text):
+        output.append(escape(text[cursor:match.start()]))
+        if match.group("url") is not None:
+            url = match.group("url")
+            label = escape(match.group("label"), quote=True)
+            if urlparse(url).scheme not in {"", "http", "https", "mailto"}:
+                output.append(label)
+            elif match.group("image"):
+                output.append(f'<img src="{escape(url, quote=True)}" alt="{label}" loading="lazy">')
+            else:
+                output.append(f'<a href="{escape(url, quote=True)}">{label}</a>')
+        else:
+            kind = next(key for key in ("code", "strong", "em") if match.group(key) is not None)
+            output.append(f"<{kind}>{escape(match.group(kind))}</{kind}>")
+        cursor = match.end()
+    output.append(escape(text[cursor:]))
+    return "".join(output)
 
 
 def _normalize_source_prefix(value: str) -> str:
@@ -88,6 +110,7 @@ def render_markdown_html(markdown: str) -> str:
     in_code = False
     list_items: list[str] = []
     list_kind: str | None = None
+    list_start = 1
 
     def flush_paragraph() -> None:
         nonlocal paragraph
@@ -101,7 +124,8 @@ def render_markdown_html(markdown: str) -> str:
         if list_items:
             items = "".join(f"<li>{_inline_html(item)}</li>" for item in list_items)
             tag = "ol" if list_kind == "ol" else "ul"
-            blocks.append(f"<{tag}>{items}</{tag}>")
+            start = f' start="{list_start}"' if tag == "ol" and list_start != 1 else ""
+            blocks.append(f"<{tag}{start}>{items}</{tag}>")
             list_items = []
             list_kind = None
 
@@ -134,20 +158,12 @@ def render_markdown_html(markdown: str) -> str:
             flush_list()
             continue
 
-        if line.startswith("# "):
+        heading = re.match(r"^(#{1,6})\s+(.+)$", line)
+        if heading:
             flush_paragraph()
             flush_list()
-            blocks.append(f"<h1>{_inline_html(line[2:].strip())}</h1>")
-            continue
-        if line.startswith("## "):
-            flush_paragraph()
-            flush_list()
-            blocks.append(f"<h2>{_inline_html(line[3:].strip())}</h2>")
-            continue
-        if line.startswith("### "):
-            flush_paragraph()
-            flush_list()
-            blocks.append(f"<h3>{_inline_html(line[4:].strip())}</h3>")
+            level = len(heading.group(1))
+            blocks.append(f"<h{level}>{_inline_html(heading.group(2))}</h{level}>")
             continue
         if line.startswith("- "):
             flush_paragraph()
@@ -161,6 +177,8 @@ def render_markdown_html(markdown: str) -> str:
             flush_paragraph()
             if list_kind not in (None, "ol"):
                 flush_list()
+            if not list_items:
+                list_start = int(ordered_match.group("number"))
             list_kind = "ol"
             list_items.append(ordered_match.group("item").strip())
             continue
@@ -170,6 +188,7 @@ def render_markdown_html(markdown: str) -> str:
             blocks.append(_inline_html(line.strip()))
             continue
 
+        flush_list()
         paragraph.append(line)
 
     flush_paragraph()
@@ -181,6 +200,10 @@ def render_markdown_html(markdown: str) -> str:
 
 def _render_page(document: dict, public_url: str, body_html: str) -> str:
     title = document.get("title") or public_url
+    # The page shell already owns the document title; keep other body headings.
+    leading_title = f"<h1>{_inline_html(title)}</h1>"
+    if body_html.startswith(leading_title):
+        body_html = body_html[len(leading_title):].lstrip()
     source_url = document.get("source_url") or document.get("canonical_url") or ""
     author = document.get("author_handle") or document.get("author") or ""
     created_at = document.get("created_at") or ""
@@ -216,8 +239,9 @@ def _render_page(document: dict, public_url: str, body_html: str) -> str:
     article img {{ max-width: 100%; height: auto; border-radius: 10px; display: block; margin: 1.5rem auto; border: 1px solid rgba(77, 58, 32, .16); }}
     article pre {{ overflow-x: auto; padding: 1rem; border-radius: 10px; background: #202a20; color: #fff7e5; }}
     article code {{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
-    article p, article ul {{ margin: 0 0 1rem; }}
-    article a {{ color: #2f716b; }}
+    article p, article ul, article ol {{ margin: 0 0 1rem; }}
+    article a {{ color: #2f716b; overflow-wrap: anywhere; }}
+    article li, .meta {{ overflow-wrap: anywhere; }}
   </style>
 </head>
 <body>

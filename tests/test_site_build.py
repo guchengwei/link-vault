@@ -162,3 +162,44 @@ def test_build_site_from_content_renders_legacy_markdown_files(tmp_path):
     assert "Example Domain" in html
     assert "Hello from markdown." in html
     assert "https://example.com" in html
+
+
+def test_named_image_and_inline_tokens_are_rendered_once():
+    from linkvault.site_builder import render_markdown_html
+    html = render_markdown_html('![A & B](assets/image.png)\n\n'
+                                '[Link](https://example.com/?a=1&b=2)\n\n'
+                                '**Bold** and `git diff` and *emphasis*')
+    assert '<img src="assets/image.png" alt="A &amp; B"' in html
+    assert '!<a' not in html
+    assert 'href="https://example.com/?a=1&amp;b=2"' in html
+    assert '&amp;amp;' not in html
+    assert '<strong>Bold</strong>' in html
+    assert '<code>git diff</code>' in html
+    assert '<em>emphasis</em>' in html
+
+
+def test_page_title_not_duplicated_and_body_order_preserved():
+    from linkvault.site_builder import render_markdown_html, _render_page
+    body = render_markdown_html('# Article\n\n### Step 0\n\n1. First\n2. Second\nAfter list.\n\n#### Notes')
+    html = _render_page({'title': 'Article'}, '', body)
+    assert html.count('<h1>Article</h1>') == 1
+    assert '<h3>Step 0</h3>' in html
+    assert '<h4>Notes</h4>' in html
+    assert html.index('<li>Second</li>') < html.index('<p>After list.</p>')
+    other = _render_page({'title': 'Article'}, '', '<h1>Different heading</h1>')
+    assert '<h1>Different heading</h1>' in other
+
+
+def test_inline_html_escapes_markup_and_rejects_unsafe_urls():
+    from linkvault.site_builder import render_markdown_html
+    html = render_markdown_html('<script>alert(1)</script>\n\n[x](javascript:evil)\n\n![x](data:evil)')
+    assert '<script>' not in html
+    assert 'href="javascript:' not in html
+    assert 'src="data:' not in html
+
+
+def test_separated_numbered_items_keep_original_numbers():
+    from linkvault.site_builder import render_markdown_html
+    html = render_markdown_html('1. First\n\n2. Second\n\n3. Third')
+    assert '<ol start="2"><li>Second</li></ol>' in html
+    assert '<ol start="3"><li>Third</li></ol>' in html
