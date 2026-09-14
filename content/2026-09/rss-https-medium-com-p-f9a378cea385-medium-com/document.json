@@ -33,13 +33,43 @@
     "content_type": "text/xml; charset=UTF-8",
     "fallback": "medium_rss",
     "feed_url": "https://medium.com/feed/@june-in-exile",
-    "capture_limitation": "Captured public RSS content; completeness against the blocked article page is unverified."
+    "verification": {
+      "verified_at": "2026-09-14T08:32:23.550105+00:00",
+      "method": "Full browser-rendered source compared with local document and published article",
+      "source_url": "https://medium.com/@june-in-exile/ai-工作流-vs-harness-engineering-f9a378cea385",
+      "result": "complete",
+      "text": {
+        "exact_normalized_match": true,
+        "normalized_characters": 3900,
+        "sha256": "fbfe768de8e70b89a787473b3299f3ed5bbea537a4c321a6cc8b66a6c50ced28",
+        "normalization": "Remove whitespace, zero-width formatting characters and line-leading numeric list markers. Exclude Medium image-view control and newsletter signup UI; preserve article prose, headings, captions and list-item text."
+      },
+      "images": {
+        "source_article_count": 1,
+        "archived_count": 1,
+        "matching_source_asset_id": "1*bdjGTZhLL27HO2t225jrIg.png",
+        "browser_source_url": "https://miro.medium.com/v2/resize:fit:1400/format:webp/1*bdjGTZhLL27HO2t225jrIg.png",
+        "downloaded_source_pixels": [
+          1400,
+          6288
+        ],
+        "archive_pixels": [
+          1024,
+          4599
+        ],
+        "comparison": "RGB mean absolute error after Lanczos resizing archive to downloaded browser-source dimensions",
+        "mean_absolute_channel_error_0_to_255": 0.8629708136435236,
+        "archive_sha256": "5dfaea9fdb07002894a7b01cf2253019b2eada8cb9156f19daab2fffbad49706",
+        "browser_source_sha256": "ee684f5f6672093975f9cc0ec00c2c98fec37dfc3424f896c9bb85431b101ae1"
+      },
+      "scope": "Article content and diagram; excludes Medium navigation, account controls, subscription prompts and recommendations."
+    }
   },
   "lineage": {
     "connector": "rss",
     "runtime_version": "0.2.0"
   },
-  "capture_status": "partial",
+  "capture_status": "complete",
   "content_kinds": [
     "text",
     "metadata",
