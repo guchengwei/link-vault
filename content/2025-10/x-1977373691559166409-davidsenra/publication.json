@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-09-21T14:56:01Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/x-1977373691559166409-davidsenra/",
+  "content_revision": "0f6976614adbbdc50186961b915a8a5e8f9ec93d",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2025-10/x-1977373691559166409-davidsenra"
-  },
-  "revision": "0f6976614adbbdc50186961b915a8a5e8f9ec93d"
+    "branch": "main"
+  }
 }
