@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-09-21T14:54:18Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/x-2050189572999618982-hitw93/",
+  "content_revision": "25c4b5f0d78ba7a8e1a0c8c3a62b5818d604b3b3",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2026-05/x-2050189572999618982-hitw93"
-  },
-  "revision": "25c4b5f0d78ba7a8e1a0c8c3a62b5818d604b3b3"
+    "branch": "main"
+  }
 }
