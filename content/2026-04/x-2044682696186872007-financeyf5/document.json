@@ -1,0 +1,47 @@
+{
+  "source_type": "x",
+  "source_url": "https://x.com/FinanceYF5/status/2044682696186872007",
+  "canonical_url": "https://x.com/FinanceYF5/status/2044682696186872007",
+  "external_id": "2044682696186872007",
+  "title": "每一次你接受一份薪水、定下一个价格，或走进一场谈判时，对方其实都在脑子里运行博弈论。",
+  "author": "AI Will",
+  "author_handle": "FinanceYF5",
+  "created_at": "2026-04-16T07:41:57Z",
+  "language": "zh",
+  "text": "每一次你接受一份薪水、定下一个价格，或走进一场谈判时，对方其实都在脑子里运行博弈论。\n\n而你，靠的只是猜。\n\n耶鲁大学 Ben Polak 教授这堂 1 小时的课程，会彻底改变你解读他人和做决策的方式。\n\n很多 MBA 要花 15 万美元才能学到这些内容，而耶鲁把它免费公开了：",
+  "markdown": "# 每一次你接受一份薪水、定下一个价格，或走进一场谈判时，对方其实都在脑子里运行博弈论。\n\n而你，靠的只是猜。 耶鲁大学 Ben Polak 教授这堂 1 小时的课程，会彻底改变你解读他人和做决策的方式。\n\n## Source details\n\n- Source: https://x.com/FinanceYF5/status/2044682696186872007\n- Author: @FinanceYF5\n- Created: 2026-04-16T07:41:57Z\n\n\n## Captured content\n\n每一次你接受一份薪水、定下一个价格，或走进一场谈判时，对方其实都在脑子里运行博弈论。\n\n而你，靠的只是猜。\n\n耶鲁大学 Ben Polak 教授这堂 1 小时的课程，会彻底改变你解读他人和做决策的方式。\n\n很多 MBA 要花 15 万美元才能学到这些内容，而耶鲁把它免费公开了：\n",
+  "summary": null,
+  "card": {
+    "title": "每一次你接受一份薪水、定下一个价格，或走进一场谈判时，对方其实都在脑子里运行博弈论。",
+    "opening": "而你，靠的只是猜。 耶鲁大学 Ben Polak 教授这堂 1 小时的课程，会彻底改变你解读他人和做决策的方式。",
+    "visual_kind": "text"
+  },
+  "tags": [],
+  "assets": [],
+  "metadata": {
+    "platform": "x",
+    "tweet_id": "2044682696186872007",
+    "screen_name": "FinanceYF5",
+    "display_name": "AI Will",
+    "stats": {
+      "likes": 2409,
+      "retweets": 651,
+      "replies": 28,
+      "views": 151402
+    },
+    "raw_source": "fxtwitter",
+    "unpreserved_media": [
+      "video"
+    ]
+  },
+  "lineage": {
+    "fetched_at": "2026-09-21T14:54:53Z",
+    "connector": "x",
+    "backend": "fxtwitter",
+    "runtime_version": "0.2.0"
+  },
+  "capture_status": "partial",
+  "content_kinds": [
+    "text"
+  ]
+}
