@@ -1,0 +1,12 @@
+{
+  "published": false,
+  "public_url": null,
+  "target": {
+    "type": "github_pages",
+    "repo_owner": "guchengwei",
+    "repo_name": "link-vault",
+    "branch": "main",
+    "bundle_path": "content/2026-03/x-2038617623030808944-ryanlpeterman"
+  },
+  "revision": null
+}
