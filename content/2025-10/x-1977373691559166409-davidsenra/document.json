@@ -1,0 +1,47 @@
+{
+  "source_type": "x",
+  "source_url": "https://x.com/davidsenra/status/1977373691559166409",
+  "canonical_url": "https://x.com/davidsenra/status/1977373691559166409",
+  "external_id": "1977373691559166409",
+  "title": "Here's my conversation with @MichaelDell, founder, chairman and CEO of Dell Tech",
+  "author": "David Senra",
+  "author_handle": "davidsenra",
+  "created_at": "2025-10-12T14:00:00Z",
+  "language": "en",
+  "text": "Here's my conversation with @MichaelDell, founder, chairman and CEO of Dell Technologies (@DellTech).\n\n(0:00) The Early Obsession: Dell's Beginnings\n(0:18) Middle School Memories and Early Financial Fascinations\n(1:11) The Spark of Stock Market Interest \n(2:14) Unreleased Products and Unwavering Enthusiasm  \n(2:35) Family Conversations and Motivations\n(3:11) The Puzzle of Technology\n(4:50) Taking Things Apart: A Lifelong Curiosity\n(5:52) The Economics of IBM and Early Business Insights  \n(9:19) Cost Control and Competitive Advantage\n(16:36) The Importance of Storytelling in Business\n(20:58) Learning from the Greats: Influences and Inspirations\n(25:00) The Challenge of Self-Sabotage in Entrepreneurship\n(29:48) Embracing Change and Innovation\n(43:09) The Power of Data and AI in Business\n(46:55) Cultural Differences and Resistance to Change\n(47:22) Investing in Technology: Lessons from Andrew Carnegie\n(49:05) The Concept of 'Dad Terminal'\n(50:54) Supply Chain Mastery\n(56:18) The Importance of Energy Management\n(57:59) Early Financial Challenges and Solutions\n(1:02:05) The Negative Cash Conversion Cycle\n(1:18:17) The Mail Order Stigma and Overcoming It\n(1:19:39) The Rise of E-commerce\n(1:28:48) Fear of Failure and Final Thoughts\n\nIncludes paid partnerships.",
+  "markdown": "# Here's my conversation with @MichaelDell, founder, chairman and CEO of Dell Tech\n\nHere's my conversation with @MichaelDell, founder, chairman and CEO of Dell Technologies (@DellTech).\n\n## Source details\n\n- Source: https://x.com/davidsenra/status/1977373691559166409\n- Author: @davidsenra\n- Created: 2025-10-12T14:00:00Z\n\n\n## Captured content\n\nHere's my conversation with @MichaelDell, founder, chairman and CEO of Dell Technologies (@DellTech).\n\n(0:00) The Early Obsession: Dell's Beginnings\n(0:18) Middle School Memories and Early Financial Fascinations\n(1:11) The Spark of Stock Market Interest \n(2:14) Unreleased Products and Unwavering Enthusiasm  \n(2:35) Family Conversations and Motivations\n(3:11) The Puzzle of Technology\n(4:50) Taking Things Apart: A Lifelong Curiosity\n(5:52) The Economics of IBM and Early Business Insights  \n(9:19) Cost Control and Competitive Advantage\n(16:36) The Importance of Storytelling in Business\n(20:58) Learning from the Greats: Influences and Inspirations\n(25:00) The Challenge of Self-Sabotage in Entrepreneurship\n(29:48) Embracing Change and Innovation\n(43:09) The Power of Data and AI in Business\n(46:55) Cultural Differences and Resistance to Change\n(47:22) Investing in Technology: Lessons from Andrew Carnegie\n(49:05) The Concept of 'Dad Terminal'\n(50:54) Supply Chain Mastery\n(56:18) The Importance of Energy Management\n(57:59) Early Financial Challenges and Solutions\n(1:02:05) The Negative Cash Conversion Cycle\n(1:18:17) The Mail Order Stigma and Overcoming It\n(1:19:39) The Rise of E-commerce\n(1:28:48) Fear of Failure and Final Thoughts\n\nIncludes paid partnerships.\n",
+  "summary": null,
+  "card": {
+    "title": "Here's my conversation with @MichaelDell, founder, chairman and CEO of Dell Tech",
+    "opening": "Here's my conversation with @MichaelDell, founder, chairman and CEO of Dell Technologies (@DellTech).",
+    "visual_kind": "text"
+  },
+  "tags": [],
+  "assets": [],
+  "metadata": {
+    "platform": "x",
+    "tweet_id": "1977373691559166409",
+    "screen_name": "davidsenra",
+    "display_name": "David Senra",
+    "stats": {
+      "likes": 1424,
+      "retweets": 234,
+      "replies": 29,
+      "views": 1290249
+    },
+    "raw_source": "fxtwitter",
+    "unpreserved_media": [
+      "video"
+    ]
+  },
+  "lineage": {
+    "fetched_at": "2026-09-21T14:56:00Z",
+    "connector": "x",
+    "backend": "fxtwitter",
+    "runtime_version": "0.2.0"
+  },
+  "capture_status": "partial",
+  "content_kinds": [
+    "text"
+  ]
+}
