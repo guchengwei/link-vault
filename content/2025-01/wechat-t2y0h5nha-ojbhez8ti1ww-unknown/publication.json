@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-10-04T12:39:41Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/wechat-t2y0h5nha-ojbhez8ti1ww-unknown/",
+  "content_revision": "5cce3e716c8f2a5fcc97ac269d9768d69b8e9c8d",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2025-01/wechat-t2y0h5nha-ojbhez8ti1ww-unknown"
-  },
-  "revision": "5cce3e716c8f2a5fcc97ac269d9768d69b8e9c8d"
+    "branch": "main"
+  }
 }
