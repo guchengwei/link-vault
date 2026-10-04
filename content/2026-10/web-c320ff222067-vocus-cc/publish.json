@@ -1,6 +1,6 @@
 {
-  "published": true,
-  "public_url": "https://guchengwei.github.io/link-vault/d/web-c320ff222067-vocus-cc/",
+  "published": false,
+  "public_url": null,
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
@@ -8,5 +8,5 @@
     "branch": "main",
     "bundle_path": "content/2026-10/web-c320ff222067-vocus-cc"
   },
-  "revision": "99870a6253bfb7ce8f5913b3ca671c48dfda988a"
+  "revision": null
 }
