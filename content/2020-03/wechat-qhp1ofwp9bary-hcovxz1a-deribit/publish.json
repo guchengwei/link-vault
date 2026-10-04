@@ -1,6 +1,6 @@
 {
-  "published": true,
-  "public_url": "https://guchengwei.github.io/link-vault/d/wechat-qhp1ofwp9bary-hcovxz1a-deribit/",
+  "published": false,
+  "public_url": null,
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
@@ -8,5 +8,5 @@
     "branch": "main",
     "bundle_path": "content/2020-03/wechat-qhp1ofwp9bary-hcovxz1a-deribit"
   },
-  "revision": "df5fb1a82b1dd425f2f40fb76bd047d998e26f71"
+  "revision": null
 }
