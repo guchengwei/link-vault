@@ -10,6 +10,9 @@ on:
       - 'linkvault/site_assets/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
+  schedule:
+    # Self-heal after transient hosted-runner acquisition failures.
+    - cron: '0 6,18 * * *'
 
 permissions:
   contents: read
@@ -18,13 +21,16 @@ permissions:
 
 concurrency:
   group: pages
-  # Only the latest push needs to be live; skip redundant deploys during publish bursts.
-  cancel-in-progress: true
+  # Let the run that already has a runner finish; newer pushes wait their turn.
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,21 +47,13 @@ jobs:
           test -f site/assets/home.js
           test "$(find site/d -name index.html | wc -l)" -gt 0
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
 
       - name: Deploy to GitHub Pages
         id: deployment
