@@ -1,12 +1,12 @@
 {
   "published": true,
+  "published_at": "2026-10-05T19:53:17Z",
   "public_url": "https://guchengwei.github.io/link-vault/d/feishu-ta1qwpaf1ib0erkug0rcgvkonwe-dcngcpwqe5y8-feishu-cn/",
+  "content_revision": "da9385271cdeb8de53ed1184ac281bcd5b9df828",
   "target": {
     "type": "github_pages",
     "repo_owner": "guchengwei",
     "repo_name": "link-vault",
-    "branch": "main",
-    "bundle_path": "content/2026-04/feishu-ta1qwpaf1ib0erkug0rcgvkonwe-dcngcpwqe5y8-feishu-cn"
-  },
-  "revision": "da9385271cdeb8de53ed1184ac281bcd5b9df828"
+    "branch": "main"
+  }
 }
