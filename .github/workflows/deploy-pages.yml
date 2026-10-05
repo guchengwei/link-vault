@@ -18,38 +18,44 @@ permissions:
 
 concurrency:
   group: pages
-  # Queue deploys instead of cancelling in-flight runs when content lands in bursts.
-  cancel-in-progress: false
+  # Only the latest push needs to be live; skip redundant deploys during publish bursts.
+  cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
       - name: Build static site from content bundles
-        run: python3 -m linkvault.site_builder
+        run: |
+          rm -rf site
+          python3 -m linkvault.site_builder
+          touch site/.nojekyll
 
       - name: Validate build output
-        run: test -f site/index.html
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+        run: |
+          test -f site/index.html
+          test -f site/assets/home.js
+          test "$(find site/d -name index.html | wc -l)" -gt 0
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Deploy to GitHub Pages
         id: deployment
